@@ -1,0 +1,265 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  .font-quran {
+    font-family: 'Amiri', serif;
+  }
+}
+
+/* Claymorphism 3D Styling Utilities */
+.clay-card {
+  border-radius: 1.5rem;
+  background: #FFFFFF;
+  box-shadow: 
+    10px 10px 24px rgba(15, 56, 42, 0.08),
+    -6px -6px 16px rgba(255, 255, 255, 0.95),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.8),
+    inset -2px -2px 6px rgba(15, 56, 42, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.25s ease;
+}
+
+.clay-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    12px 14px 28px rgba(15, 56, 42, 0.12),
+    -8px -8px 20px rgba(255, 255, 255, 1),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+    inset -2px -2px 6px rgba(15, 56, 42, 0.06);
+}
+
+.dark .clay-card {
+  background: #1c1917;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    10px 10px 24px rgba(0, 0, 0, 0.6),
+    -4px -4px 12px rgba(255, 255, 255, 0.03),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.06),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.5);
+}
+
+.clay-btn {
+  border-radius: 1rem;
+  box-shadow: 
+    5px 6px 14px rgba(0, 0, 0, 0.12),
+    -3px -3px 8px rgba(255, 255, 255, 0.7),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.clay-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    7px 8px 18px rgba(0, 0, 0, 0.16),
+    -4px -4px 10px rgba(255, 255, 255, 0.8),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.6),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.14);
+}
+
+.clay-btn:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 
+    2px 2px 6px rgba(0, 0, 0, 0.1),
+    inset 3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.clay-btn-emerald {
+  background: linear-gradient(135deg, #165b44 0%, #0F382A 100%);
+  color: #FEF08A;
+  box-shadow: 
+    6px 8px 16px rgba(15, 56, 42, 0.3),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.clay-btn-amber {
+  background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
+  color: #1c1917;
+  box-shadow: 
+    5px 6px 14px rgba(217, 119, 6, 0.35),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+    inset -3px -3px 6px rgba(180, 83, 9, 0.4);
+}
+
+.clay-btn-indigo {
+  background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
+  color: #FFFFFF;
+  box-shadow: 
+    5px 6px 14px rgba(67, 56, 202, 0.35),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+    inset -3px -3px 6px rgba(30, 27, 75, 0.4);
+}
+
+.clay-badge {
+  border-radius: 9999px;
+  box-shadow: 
+    3px 3px 8px rgba(0, 0, 0, 0.08),
+    -2px -2px 6px rgba(255, 255, 255, 0.8),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dark .clay-badge {
+  box-shadow: 
+    3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.1),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.clay-input {
+  border-radius: 1rem;
+  background: #FDFBF7;
+  box-shadow: 
+    inset 3px 3px 6px rgba(0, 0, 0, 0.08),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.8),
+    1px 1px 3px rgba(0, 0, 0, 0.03);
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.dark .clay-input {
+  background: #292524;
+  box-shadow: 
+    inset 3px 3px 6px rgba(0, 0, 0, 0.4),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Dynamic Theme Adapters for Claymorphism Mode */
+.style-clay .neo-box {
+  border-radius: 1.5rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 
+    10px 10px 24px rgba(15, 56, 42, 0.08),
+    -6px -6px 16px rgba(255, 255, 255, 0.95),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.8),
+    inset -2px -2px 6px rgba(15, 56, 42, 0.05) !important;
+}
+
+.dark.style-clay .neo-box,
+.dark .style-clay .neo-box {
+  border-radius: 1.5rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 
+    10px 10px 24px rgba(0, 0, 0, 0.6),
+    -4px -4px 12px rgba(255, 255, 255, 0.03),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.06),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.style-clay .neo-btn {
+  border-radius: 1rem !important;
+  box-shadow: 
+    5px 6px 14px rgba(0, 0, 0, 0.12),
+    -3px -3px 8px rgba(255, 255, 255, 0.7),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.12) !important;
+}
+
+.style-clay .neo-btn:active {
+  transform: translateY(1px) scale(0.97) !important;
+  box-shadow: 
+    2px 2px 6px rgba(0, 0, 0, 0.1),
+    inset 3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.3) !important;
+}
+
+.style-clay .neo-box-sm {
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 
+    5px 5px 12px rgba(15, 56, 42, 0.08),
+    -3px -3px 8px rgba(255, 255, 255, 0.9),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.8),
+    inset -1.5px -1.5px 4px rgba(15, 56, 42, 0.04) !important;
+}
+
+/* Neo-Brutalism Utilities */
+.neo-box {
+  border: 2px solid #1c1917;
+  box-shadow: 4px 4px 0px 0px #1c1917;
+}
+
+.dark .neo-box {
+  border: 2px solid #44403c;
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.neo-box-sm {
+  border: 2px solid #1c1917;
+  box-shadow: 2px 2px 0px 0px #1c1917;
+}
+
+.dark .neo-box-sm {
+  border: 2px solid #44403c;
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+
+.neo-box-gold {
+  border: 2px solid #1c1917;
+  box-shadow: 4px 4px 0px 0px #C5A059;
+}
+
+.neo-btn {
+  border: 2px solid #1c1917;
+  box-shadow: 3px 3px 0px 0px #1c1917;
+  transition: all 0.15s ease-in-out;
+}
+
+.neo-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #1c1917;
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px #1c1917;
+}
+
+.dark .neo-btn {
+  border: 2px solid #78716c;
+  box-shadow: 3px 3px 0px 0px #000000;
+}
+
+.dark .neo-btn:hover {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.dark .neo-btn:active {
+  box-shadow: 1px 1px 0px 0px #000000;
+}
+
+.neo-tag {
+  border: 1.5px solid #1c1917;
+  box-shadow: 1.5px 1.5px 0px 0px #1c1917;
+}
+
+.dark .neo-tag {
+  border: 1.5px solid #57534e;
+  box-shadow: 1.5px 1.5px 0px 0px #000000;
+}
+
+@media print {
+  nav, header, footer, .no-print, button, .tabs-navigation {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+}
+

@@ -1,0 +1,6 @@
+{
+  "name": "مخططي المسلم | Muslim Student Planner",
+  "description": "تطبيق ويب متكامل ومخصص لتلميذ السنة الثامنة أساسي في تونس لتنظيم الجدول المدرسي، الصلاة، ورد القرآن، التزامات Taki Academy، الواجبات والروتين اليومي المتوازن.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

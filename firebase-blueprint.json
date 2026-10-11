@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "UserProfile",
+      "description": "Student settings and progress profile",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "studentName": { "type": "string", "maxLength": 80 },
+        "selectedCity": { "type": "string", "maxLength": 60 },
+        "wakeUpTime": { "type": "string", "maxLength": 10 },
+        "targetBedTime": { "type": "string", "maxLength": 10 },
+        "commuteMinutes": { "type": "number" },
+        "xp": { "type": "number" },
+        "level": { "type": "number" },
+        "streakDays": { "type": "number" }
+      },
+      "required": ["userId", "studentName", "selectedCity"]
+    },
+    "homework": {
+      "title": "Homework",
+      "description": "Student homework and revision assignments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "subject": { "type": "string", "maxLength": 60 },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 500 },
+        "dueDate": { "type": "string", "maxLength": 30 },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "estimatedMinutes": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed"] },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "userId", "subject", "title", "dueDate", "status"]
+    },
+    "schoolClass": {
+      "title": "SchoolClass",
+      "description": "Student timetable session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "day": { "type": "string", "maxLength": 20 },
+        "startTime": { "type": "string", "maxLength": 10 },
+        "endTime": { "type": "string", "maxLength": 10 },
+        "subject": { "type": "string", "maxLength": 60 },
+        "classroom": { "type": "string", "maxLength": 60 },
+        "teacher": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["id", "userId", "day", "startTime", "endTime", "subject"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "User profile document"
+    },
+    "/users/{userId}/homework/{homeworkId}": {
+      "schema": "homework",
+      "description": "Student homework tasks subcollection"
+    },
+    "/users/{userId}/classes/{classId}": {
+      "schema": "schoolClass",
+      "description": "Student timetable classes subcollection"
+    }
+  }
+}
