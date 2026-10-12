@@ -164,22 +164,22 @@ export const PrayerAndQuran: React.FC<PrayerAndQuranProps> = ({
       </div>
 
       {/* Next Prayer Countdown Card */}
-      <div className="bg-gradient-to-r from-[#0F382A] to-[#144735] text-amber-50 rounded-2xl p-5 border-2 border-stone-800 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="clay-card-emerald p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
         <div>
           <span className="text-xs text-emerald-200 font-bold">
             الصلاة القادمة • حسب توقيت {settings.selectedCity}
           </span>
-          <h3 className="text-2xl font-black text-amber-300 mt-0.5">
+          <h3 className="text-2xl sm:text-3xl font-black text-amber-300 mt-1">
             صلاة {nextPrayer.nameAr} ({nextPrayer.time})
           </h3>
-          <p className="text-xs text-emerald-100 mt-1">
+          <p className="text-xs text-emerald-100/90 mt-1">
             طريقة الحساب: التوقيت التونسي المعتمد (زاوية الفجر 18° والعشاء 18°)
           </p>
         </div>
 
-        <div className="bg-emerald-950/70 border border-emerald-700/60 rounded-xl px-5 py-3 text-center">
+        <div className="bg-emerald-950/80 border border-emerald-600/40 rounded-2xl px-6 py-3.5 text-center shadow-[inset_1.5px_1.5px_3px_rgba(0,0,0,0.4),0_4px_12px_rgba(0,0,0,0.15)]">
           <div className="text-[11px] text-emerald-300 font-bold">الوقت المتبقي</div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-amber-300">
+          <div className="text-2xl font-black font-mono text-amber-300">
             {nextPrayer.timeRemaining}
           </div>
         </div>
@@ -194,10 +194,10 @@ export const PrayerAndQuran: React.FC<PrayerAndQuranProps> = ({
           return (
             <div
               key={p.key}
-              className={`p-4 rounded-2xl border-2 transition-all flex flex-col justify-between ${
+              className={`p-4 sm:p-5 rounded-3xl transition-all flex flex-col justify-between ${
                 isDone
-                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500/70 shadow-sm'
-                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800'
+                  ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/80 dark:from-emerald-950/40 dark:to-emerald-900/20 border border-emerald-400/80 shadow-[6px_10px_20px_rgba(15,56,42,0.12),inset_2px_2px_4px_rgba(255,255,255,0.9),inset_-2px_-2px_4px_rgba(0,0,0,0.04)]'
+                  : 'clay-card'
               }`}
             >
               <div>
@@ -215,14 +215,14 @@ export const PrayerAndQuran: React.FC<PrayerAndQuranProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2 border-t border-stone-100 dark:border-stone-800">
+              <div className="space-y-2 pt-2 border-t border-stone-200/60 dark:border-stone-800">
                 {/* Fardh button */}
                 <button
                   onClick={() => handleTogglePrayer(p.key)}
-                  className={`w-full py-1.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  className={`w-full py-2 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer ${
                     isDone
-                      ? 'bg-emerald-700 text-white shadow-sm'
-                      : 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-stone-800 dark:text-stone-200'
+                      ? 'clay-btn-emerald shadow-sm'
+                      : 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-stone-800 dark:text-stone-200 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)]'
                   }`}
                 >
                   {isDone ? (
@@ -238,13 +238,14 @@ export const PrayerAndQuran: React.FC<PrayerAndQuranProps> = ({
                 {p.sunnahKey && (
                   <button
                     onClick={() => handleToggleSunnah(p.sunnahKey!)}
-                    className={`w-full py-1 px-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${
+                    className={`w-full py-1.5 px-2 rounded-2xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer ${
                       isSunnahDone
-                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300'
-                        : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800/60'
+                        ? 'bg-amber-400 text-stone-900 shadow-sm'
+                        : 'text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
                     }`}
                   >
-                    {isSunnahDone ? '✓ أنجزت السنة' : '+ سنة الصلاة'}
+                    {isSunnahDone && <Check className="w-3 h-3 stroke-[3]" />}
+                    <span>{isSunnahDone ? 'صليت السنة' : 'أداء السنة'}</span>
                   </button>
                 )}
               </div>
@@ -254,7 +255,7 @@ export const PrayerAndQuran: React.FC<PrayerAndQuranProps> = ({
       </div>
 
       {/* Quran Section */}
-      <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm space-y-5">
+      <div className="clay-card p-6 sm:p-7 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
           <div>
             <h3 className="font-black text-lg text-stone-900 dark:text-white flex items-center gap-2">
@@ -280,11 +281,43 @@ export const PrayerAndQuran: React.FC<PrayerAndQuranProps> = ({
         {/* Quran progress stats card */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center">
-            <span className="text-xs text-stone-500 dark:text-stone-400">الصفحة الحالية</span>
-            <div className="text-2xl font-black text-emerald-800 dark:text-emerald-300 font-mono mt-1">
-              صـ {quran.currentPage}
+            <span className="text-xs text-stone-500 dark:text-stone-400">الصفحة الحالية من المصحف</span>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const nextPage = Math.max(1, quran.currentPage - 1);
+                  onUpdateQuran({ ...quran, currentPage: nextPage, currentJuz: Math.ceil(nextPage / 20) });
+                }}
+                className="w-6 h-6 rounded-lg bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100 font-black text-xs cursor-pointer hover:bg-emerald-300"
+                title="الصفحة السابقة"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                min="1"
+                max="604"
+                value={quran.currentPage}
+                onChange={(e) => {
+                  const val = Math.max(1, Math.min(604, Number(e.target.value) || 1));
+                  onUpdateQuran({ ...quran, currentPage: val, currentJuz: Math.ceil(val / 20) });
+                }}
+                className="w-16 text-center font-black text-xl text-emerald-800 dark:text-emerald-300 font-mono bg-transparent border-b-2 border-emerald-400 dark:border-emerald-600 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const nextPage = Math.min(604, quran.currentPage + 1);
+                  onUpdateQuran({ ...quran, currentPage: nextPage, currentJuz: Math.ceil(nextPage / 20) });
+                }}
+                className="w-6 h-6 rounded-lg bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100 font-black text-xs cursor-pointer hover:bg-emerald-300"
+                title="الصفحة التالية"
+              >
+                +
+              </button>
             </div>
-            <span className="text-[11px] text-stone-500">الجزء {quran.currentJuz}</span>
+            <span className="text-[11px] text-stone-500 block mt-1 font-bold">الجزء {quran.currentJuz} من 30</span>
           </div>
 
           <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 text-center">

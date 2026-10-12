@@ -11,172 +11,288 @@
 }
 
 /* Claymorphism 3D Styling Utilities */
+:root {
+  --clay-bg: #F4F1EA;
+  --clay-card-bg: #FFFFFF;
+  --clay-shadow-outer: 8px 14px 28px -4px rgba(15, 56, 42, 0.08), -6px -6px 18px 0px rgba(255, 255, 255, 0.95);
+  --clay-shadow-inner: inset 2.5px 2.5px 5px rgba(255, 255, 255, 0.9), inset -2.5px -2.5px 6px rgba(15, 56, 42, 0.05);
+}
+
 .clay-card {
-  border-radius: 1.5rem;
+  border-radius: 1.75rem;
   background: #FFFFFF;
   box-shadow: 
-    10px 10px 24px rgba(15, 56, 42, 0.08),
-    -6px -6px 16px rgba(255, 255, 255, 0.95),
-    inset 2px 2px 5px rgba(255, 255, 255, 0.8),
-    inset -2px -2px 6px rgba(15, 56, 42, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  transition: all 0.25s ease;
+    8px 14px 28px -4px rgba(15, 56, 42, 0.08),
+    -6px -6px 18px 0px rgba(255, 255, 255, 0.95),
+    inset 2.5px 2.5px 5px rgba(255, 255, 255, 0.9),
+    inset -2.5px -2.5px 6px rgba(15, 56, 42, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .clay-card:hover {
   transform: translateY(-2px);
   box-shadow: 
-    12px 14px 28px rgba(15, 56, 42, 0.12),
-    -8px -8px 20px rgba(255, 255, 255, 1),
-    inset 2px 2px 5px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 6px rgba(15, 56, 42, 0.06);
+    10px 18px 32px -4px rgba(15, 56, 42, 0.12),
+    -8px -8px 22px 0px rgba(255, 255, 255, 1),
+    inset 2.5px 2.5px 5px rgba(255, 255, 255, 0.95),
+    inset -2.5px -2.5px 6px rgba(15, 56, 42, 0.06);
 }
 
 .dark .clay-card {
   background: #1c1917;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    10px 10px 24px rgba(0, 0, 0, 0.6),
-    -4px -4px 12px rgba(255, 255, 255, 0.03),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.06),
-    inset -3px -3px 8px rgba(0, 0, 0, 0.5);
+    10px 16px 30px rgba(0, 0, 0, 0.6),
+    -4px -4px 14px rgba(255, 255, 255, 0.03),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.07),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.55);
+}
+
+.clay-card-emerald {
+  background: linear-gradient(135deg, #134e3a 0%, #0F382A 100%);
+  color: #FFFFFF;
+  border-radius: 1.75rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    8px 14px 28px -4px rgba(15, 56, 42, 0.28),
+    -4px -4px 14px 0px rgba(255, 255, 255, 0.1),
+    inset 2.5px 2.5px 5px rgba(255, 255, 255, 0.25),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.clay-card-indigo {
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  color: #FFFFFF;
+  border-radius: 1.75rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    8px 14px 28px -4px rgba(55, 48, 163, 0.3),
+    inset 2.5px 2.5px 5px rgba(255, 255, 255, 0.3),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.clay-card-amber {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #1c1917;
+  border-radius: 1.75rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    8px 14px 26px -4px rgba(217, 119, 6, 0.3),
+    inset 2.5px 2.5px 5px rgba(255, 255, 255, 0.5),
+    inset -3px -3px 8px rgba(180, 83, 9, 0.35);
 }
 
 .clay-btn {
-  border-radius: 1rem;
+  border-radius: 1.15rem;
   box-shadow: 
-    5px 6px 14px rgba(0, 0, 0, 0.12),
-    -3px -3px 8px rgba(255, 255, 255, 0.7),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.5),
-    inset -2px -2px 5px rgba(0, 0, 0, 0.12);
+    5px 7px 16px rgba(0, 0, 0, 0.1),
+    -3px -3px 8px rgba(255, 255, 255, 0.75),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.55),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .clay-btn:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 
-    7px 8px 18px rgba(0, 0, 0, 0.16),
-    -4px -4px 10px rgba(255, 255, 255, 0.8),
-    inset 2px 2px 5px rgba(255, 255, 255, 0.6),
-    inset -2px -2px 5px rgba(0, 0, 0, 0.14);
+    7px 10px 20px rgba(0, 0, 0, 0.14),
+    -4px -4px 10px rgba(255, 255, 255, 0.85),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.65),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.12);
 }
 
 .clay-btn:active {
-  transform: translateY(1px) scale(0.97);
+  transform: translateY(1.5px) scale(0.97);
   box-shadow: 
-    2px 2px 6px rgba(0, 0, 0, 0.1),
-    inset 3px 3px 6px rgba(0, 0, 0, 0.2),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.3);
+    2px 2px 5px rgba(0, 0, 0, 0.1),
+    inset 3px 3px 6px rgba(0, 0, 0, 0.22),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.35);
 }
 
 .clay-btn-emerald {
   background: linear-gradient(135deg, #165b44 0%, #0F382A 100%);
   color: #FEF08A;
+  border-radius: 1.15rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
   box-shadow: 
-    6px 8px 16px rgba(15, 56, 42, 0.3),
+    6px 9px 18px rgba(15, 56, 42, 0.32),
     inset 2px 2px 4px rgba(255, 255, 255, 0.4),
     inset -3px -3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.clay-btn-emerald:active {
+  transform: translateY(1.5px) scale(0.97);
+  box-shadow: 
+    2px 3px 6px rgba(15, 56, 42, 0.25),
+    inset 3px 3px 7px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.2);
 }
 
 .clay-btn-amber {
   background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
   color: #1c1917;
+  border-radius: 1.15rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
   box-shadow: 
-    5px 6px 14px rgba(217, 119, 6, 0.35),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+    5px 8px 16px rgba(217, 119, 6, 0.35),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.65),
     inset -3px -3px 6px rgba(180, 83, 9, 0.4);
+}
+
+.clay-btn-amber:active {
+  transform: translateY(1.5px) scale(0.97);
+  box-shadow: 
+    2px 3px 6px rgba(180, 83, 9, 0.25),
+    inset 3px 3px 7px rgba(180, 83, 9, 0.5),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .clay-btn-indigo {
   background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
   color: #FFFFFF;
+  border-radius: 1.15rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
   box-shadow: 
-    5px 6px 14px rgba(67, 56, 202, 0.35),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+    5px 8px 16px rgba(67, 56, 202, 0.35),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.45),
     inset -3px -3px 6px rgba(30, 27, 75, 0.4);
 }
 
 .clay-badge {
   border-radius: 9999px;
   box-shadow: 
-    3px 3px 8px rgba(0, 0, 0, 0.08),
+    3px 4px 10px rgba(0, 0, 0, 0.08),
     -2px -2px 6px rgba(255, 255, 255, 0.8),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.08);
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.7),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .dark .clay-badge {
   box-shadow: 
-    3px 3px 8px rgba(0, 0, 0, 0.4),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.1),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.5);
+    3px 4px 10px rgba(0, 0, 0, 0.45),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.12),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .clay-input {
-  border-radius: 1rem;
+  border-radius: 1.15rem;
   background: #FDFBF7;
   box-shadow: 
-    inset 3px 3px 6px rgba(0, 0, 0, 0.08),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.8),
-    1px 1px 3px rgba(0, 0, 0, 0.03);
+    inset 3px 3px 7px rgba(0, 0, 0, 0.08),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.85),
+    1px 1px 4px rgba(0, 0, 0, 0.02);
   border: 1.5px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.clay-input:focus {
+  outline: none;
+  border-color: #0F382A;
+  box-shadow: 
+    inset 3px 3px 7px rgba(15, 56, 42, 0.12),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.9),
+    0 0 0 3px rgba(15, 56, 42, 0.15);
 }
 
 .dark .clay-input {
   background: #292524;
   box-shadow: 
-    inset 3px 3px 6px rgba(0, 0, 0, 0.4),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.04);
+    inset 3px 3px 7px rgba(0, 0, 0, 0.45),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.05);
   border: 1.5px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Dynamic Theme Adapters for Claymorphism Mode */
-.style-clay .neo-box {
-  border-radius: 1.5rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+.dark .clay-input:focus {
+  border-color: #FBBF24;
   box-shadow: 
-    10px 10px 24px rgba(15, 56, 42, 0.08),
-    -6px -6px 16px rgba(255, 255, 255, 0.95),
-    inset 2px 2px 5px rgba(255, 255, 255, 0.8),
-    inset -2px -2px 6px rgba(15, 56, 42, 0.05) !important;
+    inset 3px 3px 7px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.08),
+    0 0 0 3px rgba(251, 191, 36, 0.2);
+}
+
+/* Global Claymorphism Application Across All Classes */
+.style-clay .neo-box,
+.style-clay [class*="shadow-[4px_4px_0px"],
+.style-clay [class*="shadow-[5px_5px_0px"],
+.style-clay [class*="shadow-[3px_3px_0px"] {
+  border-radius: 1.75rem !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 
+    8px 14px 28px -4px rgba(15, 56, 42, 0.08),
+    -6px -6px 18px 0px rgba(255, 255, 255, 0.95),
+    inset 2.5px 2.5px 5px rgba(255, 255, 255, 0.9),
+    inset -2.5px -2.5px 6px rgba(15, 56, 42, 0.05) !important;
 }
 
 .dark.style-clay .neo-box,
-.dark .style-clay .neo-box {
-  border-radius: 1.5rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+.dark .style-clay .neo-box,
+.dark.style-clay [class*="shadow-[4px_4px_0px"],
+.dark .style-clay [class*="shadow-[4px_4px_0px"],
+.dark.style-clay [class*="shadow-[5px_5px_0px"],
+.dark .style-clay [class*="shadow-[5px_5px_0px"] {
+  border-radius: 1.75rem !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 
-    10px 10px 24px rgba(0, 0, 0, 0.6),
-    -4px -4px 12px rgba(255, 255, 255, 0.03),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.06),
-    inset -3px -3px 8px rgba(0, 0, 0, 0.5) !important;
+    10px 16px 30px rgba(0, 0, 0, 0.6),
+    -4px -4px 14px rgba(255, 255, 255, 0.03),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.07),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.55) !important;
+}
+
+.style-clay .neo-box-sm,
+.style-clay [class*="shadow-[2px_2px_0px"] {
+  border-radius: 1.25rem !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 
+    5px 8px 16px rgba(15, 56, 42, 0.07),
+    -3px -3px 10px rgba(255, 255, 255, 0.9),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+    inset -2px -2px 4px rgba(15, 56, 42, 0.04) !important;
 }
 
 .style-clay .neo-btn {
-  border-radius: 1rem !important;
+  border-radius: 1.15rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
   box-shadow: 
-    5px 6px 14px rgba(0, 0, 0, 0.12),
-    -3px -3px 8px rgba(255, 255, 255, 0.7),
-    inset 2px 2px 4px rgba(255, 255, 255, 0.5),
-    inset -2px -2px 5px rgba(0, 0, 0, 0.12) !important;
+    5px 7px 16px rgba(0, 0, 0, 0.1),
+    -3px -3px 8px rgba(255, 255, 255, 0.75),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.55),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 .style-clay .neo-btn:active {
-  transform: translateY(1px) scale(0.97) !important;
+  transform: translateY(1.5px) scale(0.97) !important;
   box-shadow: 
-    2px 2px 6px rgba(0, 0, 0, 0.1),
-    inset 3px 3px 6px rgba(0, 0, 0, 0.2),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.3) !important;
+    2px 2px 5px rgba(0, 0, 0, 0.1),
+    inset 3px 3px 6px rgba(0, 0, 0, 0.22),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.35) !important;
 }
 
-.style-clay .neo-box-sm {
-  border-radius: 1rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+.style-clay .neo-tag {
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
   box-shadow: 
-    5px 5px 12px rgba(15, 56, 42, 0.08),
-    -3px -3px 8px rgba(255, 255, 255, 0.9),
-    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.8),
-    inset -1.5px -1.5px 4px rgba(15, 56, 42, 0.04) !important;
+    3px 4px 10px rgba(0, 0, 0, 0.08),
+    -2px -2px 6px rgba(255, 255, 255, 0.8),
+    inset 1.5px 1.5px 3px rgba(255, 255, 255, 0.7),
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.style-clay .border-stone-900,
+.style-clay .border-stone-800 {
+  border-color: rgba(15, 56, 42, 0.12) !important;
+}
+
+.dark.style-clay .border-stone-900,
+.dark .style-clay .border-stone-900,
+.dark.style-clay .border-stone-800,
+.dark .style-clay .border-stone-800 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Neo-Brutalism Utilities */

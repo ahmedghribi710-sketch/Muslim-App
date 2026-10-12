@@ -11,16 +11,35 @@ import {
   Compass,
   GraduationCap,
   Sparkles,
-  User,
+  User as UserIcon,
   ShieldCheck,
+  TrendingUp,
+  Trash2,
 } from 'lucide-react';
-import { UserSettings } from '../types';
+import type { User as FirebaseUser } from 'firebase/auth';
+import {
+  isNotificationSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendAppNotification,
+} from '../utils/notifications';
+import { UserSettings, UserStats, DailyPrayerRecord } from '../types';
 import { TUNISIAN_CITIES } from '../utils/prayerTimes';
 import { storage } from '../utils/storage';
 import { sound } from '../utils/sound';
+import { StudyWeeklyChart } from './StudyWeeklyChart';
+import { TakiAcademyLogo } from './TakiAcademyLogo';
+import { Cloud, LogIn, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface SettingsProps {
   settings: UserSettings;
+  stats?: UserStats;
+  dailyPrayers?: DailyPrayerRecord;
+  currentUser?: FirebaseUser | null;
+  onSyncCloud?: () => Promise<void> | void;
+  onLogin?: () => void;
+  onLogout?: () => void;
+  onClearDemoData?: () => void;
   onUpdateSettings: (settings: UserSettings) => void;
   onResetAll: () => void;
   onOpenPdfModal?: () => void;
@@ -28,6 +47,13 @@ interface SettingsProps {
 
 export const Settings: React.FC<SettingsProps> = ({
   settings,
+  stats,
+  dailyPrayers,
+  currentUser,
+  onSyncCloud,
+  onLogin,
+  onLogout,
+  onClearDemoData,
   onUpdateSettings,
   onResetAll,
   onOpenPdfModal,
@@ -36,6 +62,54 @@ export const Settings: React.FC<SettingsProps> = ({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [importStatus, setImportStatus] = useState<string>('');
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>(() =>
+    getNotificationPermission()
+  );
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatusMsg, setSyncStatusMsg] = useState('');
+
+  // Keep form in sync when settings prop updates (e.g. from cloud or other components)
+  React.useEffect(() => {
+    setForm({ ...settings });
+  }, [settings]);
+
+  // Instant auto-save helper so that any field change is immediately persisted
+  const updateField = <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => {
+    const updated = { ...form, [key]: value };
+    setForm(updated);
+    onUpdateSettings(updated);
+  };
+
+  const currentStats = stats || storage.getStats();
+
+  const handleRequestNotif = async () => {
+    const res = await requestNotificationPermission();
+    setNotifPermission(res);
+  };
+
+  const handleTestNotif = () => {
+    sendAppNotification('🔔 إشعار تجريبي | Test de notification', {
+      body: 'نظام الإشعارات متاح ويعمل بنجاح لتنبيهات الصلاة، Taki Academy، ومؤقت بومودورو!',
+      type: 'taki',
+    });
+    sound.playTakiAlert();
+  };
+
+  const handleManualSync = async () => {
+    if (onSyncCloud) {
+      setIsSyncing(true);
+      setSyncStatusMsg('');
+      try {
+        await onSyncCloud();
+        setSyncStatusMsg('✓ تم تحديث البيانات ومزامنتها بنجاح مع سحابة Firebase!');
+        setTimeout(() => setSyncStatusMsg(''), 4000);
+      } catch (err) {
+        setSyncStatusMsg('حدث خطأ أثناء التحديث السحابي');
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+  };
 
   const allSubjects = [
     'رياضيات',
@@ -61,11 +135,10 @@ export const Settings: React.FC<SettingsProps> = ({
 
   const toggleWeakSubject = (subject: string) => {
     const current = form.weakSubjects || [];
-    if (current.includes(subject)) {
-      setForm({ ...form, weakSubjects: current.filter((s) => s !== subject) });
-    } else {
-      setForm({ ...form, weakSubjects: [...current, subject] });
-    }
+    const nextWeak = current.includes(subject)
+      ? current.filter((s) => s !== subject)
+      : [...current, subject];
+    updateField('weakSubjects', nextWeak);
   };
 
   const handleExport = () => {
@@ -116,74 +189,81 @@ export const Settings: React.FC<SettingsProps> = ({
             <span>الإعدادات والتخصيص</span>
           </h2>
           <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 mt-1">
-            تخصيص أوقات النوم، مواقيت الصلاة، والتزامات Taki Academy، والنسخ الاحتياطي
+            تخصيص أوقات النوم، مواقيت الصلاة، والتزامات Taki Academy، والنسخ الاحتياطي (الحفظ فوري ودائم)
           </p>
         </div>
 
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0F382A] hover:bg-emerald-900 text-amber-300 font-bold text-xs rounded-xl transition-all shadow-sm self-start sm:self-auto"
-        >
-          <Printer className="w-4 h-4" />
-          <span>تصدير / طباعة PDF</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300/60 flex items-center gap-1 shadow-sm">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>حفظ فوري تلقائي</span>
+          </span>
+
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0F382A] hover:bg-emerald-900 text-amber-300 font-bold text-xs rounded-xl transition-all shadow-sm"
+          >
+            <Printer className="w-4 h-4" />
+            <span>تصدير / طباعة PDF</span>
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         
         {/* 1. Profile & Schedule Timing */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="clay-card p-6 sm:p-7 space-y-4">
           <h3 className="font-black text-base text-stone-900 dark:text-white flex items-center gap-2 pb-3 border-b border-stone-200 dark:border-stone-800">
-            <User className="w-5 h-5 text-emerald-700" />
+            <UserIcon className="w-5 h-5 text-emerald-700" />
             <span>بيانات الطالب وأوقات الاستيقاظ والنوم</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-bold">
             <div>
-              <label className="block text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block text-stone-700 dark:text-stone-300 mb-1.5 font-bold">
                 اسم الطالب
               </label>
               <input
                 type="text"
                 value={form.studentName}
-                onChange={(e) => setForm({ ...form, studentName: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-sm font-bold"
+                onChange={(e) => updateField('studentName', e.target.value)}
+                className="clay-input w-full p-3 text-sm font-bold"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block text-stone-700 dark:text-stone-300 mb-1.5 font-bold">
                 وقت الاستيقاظ المستهدف (صباحًا)
               </label>
               <input
                 type="time"
                 value={form.wakeUpTime}
-                onChange={(e) => setForm({ ...form, wakeUpTime: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-sm font-bold"
+                onChange={(e) => updateField('wakeUpTime', e.target.value)}
+                className="clay-input w-full p-3 text-sm font-bold font-mono"
                 required
               />
-              <span className="text-[10px] text-stone-500 font-normal">الموصى به: 05:30 لصلاة الفجر</span>
+              <span className="text-[10px] text-stone-500 font-normal mt-1 block">الموصى به: 05:30 لصلاة الفجر</span>
             </div>
 
             <div>
-              <label className="block text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block text-stone-700 dark:text-stone-300 mb-1.5 font-bold">
                 وقت النوم المستهدف (ليلاً)
               </label>
               <input
                 type="time"
                 value={form.targetBedTime}
-                onChange={(e) => setForm({ ...form, targetBedTime: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-sm font-bold"
+                onChange={(e) => updateField('targetBedTime', e.target.value)}
+                className="clay-input w-full p-3 text-sm font-bold font-mono"
                 required
               />
-              <span className="text-[10px] text-stone-500 font-normal">الموصى به: 21:45 (بعد Taki Academy)</span>
+              <span className="text-[10px] text-stone-500 font-normal mt-1 block">الموصى به: 21:45 (بعد Taki Academy)</span>
             </div>
           </div>
 
           <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold">
             <div>
-              <label className="block text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block text-stone-700 dark:text-stone-300 mb-1.5 font-bold">
                 مدة التنقل بين المدرسة والمنزل (دقائق)
               </label>
               <input
@@ -191,20 +271,20 @@ export const Settings: React.FC<SettingsProps> = ({
                 min="5"
                 max="60"
                 value={form.commuteMinutes}
-                onChange={(e) => setForm({ ...form, commuteMinutes: Number(e.target.value) })}
-                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-sm font-bold"
+                onChange={(e) => updateField('commuteMinutes', Number(e.target.value))}
+                className="clay-input w-full p-3 text-sm font-bold font-mono"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-stone-700 dark:text-stone-300 mb-1">
+              <label className="block text-stone-700 dark:text-stone-300 mb-1.5 font-bold">
                 مدينة مواقيت الصلاة (الجمهورية التونسية)
               </label>
               <select
                 value={form.selectedCity}
-                onChange={(e) => setForm({ ...form, selectedCity: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-sm font-bold"
+                onChange={(e) => updateField('selectedCity', e.target.value)}
+                className="clay-input w-full p-3 text-sm font-bold"
               >
                 {TUNISIAN_CITIES.map((c) => (
                   <option key={c.id} value={c.nameAr}>
@@ -216,34 +296,171 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
         </div>
 
-        {/* 2. Taki Academy & Notifications */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <h3 className="font-black text-base text-stone-900 dark:text-white flex items-center gap-2 pb-3 border-b border-stone-200 dark:border-stone-800">
-            <GraduationCap className="w-5 h-5 text-indigo-600" />
-            <span>التزام Taki Academy والتنبيهات الصوتية</span>
+        {/* 2. Firebase Cloud Data Synchronization (Mise à jour des données Firebase) */}
+        <div className="clay-card p-6 sm:p-7 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800 flex-wrap gap-2">
+            <h3 className="font-black text-base text-stone-900 dark:text-white flex items-center gap-2">
+              <Cloud className="w-5 h-5 text-teal-600" />
+              <span>تحديث ومزامنة البيانات السحابية (Firebase Cloud Sync)</span>
+            </h3>
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-900 dark:text-teal-300 border border-teal-300/60">
+              Mise à jour des données
+            </span>
+          </div>
+
+          <div className="p-4 bg-teal-50/60 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 rounded-2xl space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="font-black text-sm text-stone-900 dark:text-white flex items-center gap-2">
+                  <span>قاعدة بيانات Firebase Firestore</span>
+                  {currentUser ? (
+                    <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                      متصل ومسجل
+                    </span>
+                  ) : (
+                    <span className="bg-amber-500 text-stone-950 text-[10px] font-black px-2 py-0.5 rounded-full">
+                      حفظ محلي فقط
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-stone-600 dark:text-stone-300 mt-0.5">
+                  {currentUser
+                    ? `الحساب: ${currentUser.email || currentUser.displayName || 'مستخدم مسجل'}`
+                    : 'سجّل الدخول بجوجل لمزامنة جدولك، واجباتك، ومعدلاتك عبر جميع أجهزتك.'}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {currentUser ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isSyncing}
+                      onClick={handleManualSync}
+                      className="clay-btn-emerald px-4 py-2 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                    >
+                      <Cloud className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                      <span>{isSyncing ? 'جارِ التحديث...' : 'تحديث البيانات الآن (Mettre à jour)'}</span>
+                    </button>
+                    {onLogout && (
+                      <button
+                        type="button"
+                        onClick={onLogout}
+                        className="p-2 rounded-xl bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-red-600 transition-colors cursor-pointer"
+                        title="تسجيل الخروج"
+                      >
+                        <LogOut className="w-4 h-4" />
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  onLogin && (
+                    <button
+                      type="button"
+                      onClick={onLogin}
+                      className="clay-btn-amber px-4 py-2 text-stone-950 font-black text-xs rounded-xl flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>دخول Google للمزامنة</span>
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+
+            {syncStatusMsg && (
+              <div className="p-2.5 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/60 border border-emerald-300 text-emerald-900 dark:text-emerald-200 text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{syncStatusMsg}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 3. Taki Academy & Notifications (Notifications Available) */}
+        <div className="clay-card p-6 sm:p-7 space-y-4">
+          <h3 className="font-black text-base text-stone-900 dark:text-white flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <TakiAcademyLogo variant="icon" size="xs" className="w-5 h-5" />
+              <span>التزام Taki Academy ونظام الإشعارات المتاحة (Notifications)</span>
+            </div>
+            <a
+              href="https://www.takiacademy.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1"
+            >
+              <span>takiacademy.com</span>
+            </a>
           </h3>
 
           <div className="space-y-3 text-xs">
-            <div className="p-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 rounded-xl flex items-center justify-between">
+            {/* Browser Push Notifications status and toggle */}
+            <div className="p-4 bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)]">
               <div>
-                <div className="font-bold text-stone-900 dark:text-white">
+                <div className="font-black text-sm text-stone-900 dark:text-white flex items-center gap-2">
+                  <span>إشعارات النظام والمتصفح (Browser Push Notifications)</span>
+                  {notifPermission === 'granted' ? (
+                    <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                      متاحة ومفعلة ✓
+                    </span>
+                  ) : notifPermission === 'denied' ? (
+                    <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                      محظورة في المتصفح
+                    </span>
+                  ) : (
+                    <span className="bg-amber-400 text-stone-950 text-[10px] font-black px-2 py-0.5 rounded-full">
+                      بانتظار الإذن
+                    </span>
+                  )}
+                </div>
+                <p className="text-stone-500 dark:text-stone-400 mt-0.5">
+                  تنبيهات فورية تظهر على الشاشة حتى لو كان المتصفح مصغرًا لمواقيت الصلاة وحصص Taki Academy.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {notifPermission !== 'granted' ? (
+                  <button
+                    type="button"
+                    onClick={handleRequestNotif}
+                    className="clay-btn-indigo px-3.5 py-1.5 text-white font-black text-xs rounded-xl transition-all cursor-pointer"
+                  >
+                    تفعيل الإشعارات (Activer)
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleTestNotif}
+                    className="clay-btn-amber px-3.5 py-1.5 text-stone-950 font-black text-xs rounded-xl transition-all cursor-pointer"
+                    title="تجربة إرسال إشعار فوري للتأكد من عمله"
+                  >
+                    إرسال إشعار تجريبي 🔔
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 rounded-2xl flex items-center justify-between shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)]">
+              <div>
+                <div className="font-black text-sm text-stone-900 dark:text-white">
                   تنبيه ما قبل حصة Taki Academy (الساعة 19:15)
                 </div>
                 <p className="text-stone-500 dark:text-stone-400 mt-0.5">
-                  إشعار صوتي خفيف قبل 15 دقيقة لتجهيز الحاسوب والكراس قبل بدء الحصة 19:30
+                  إشعار صوتي خفيف ونظام إشعارات قبل 15 دقيقة لتجهيز الحاسوب والكراس قبل بدء الحصة 19:30
                 </p>
               </div>
               <input
                 type="checkbox"
                 checked={form.enableTakiAlert}
-                onChange={(e) => setForm({ ...form, enableTakiAlert: e.target.checked })}
-                className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                onChange={(e) => updateField('enableTakiAlert', e.target.checked)}
+                className="w-5 h-5 rounded-lg text-indigo-600 cursor-pointer"
               />
             </div>
 
-            <div className="p-3.5 bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 rounded-xl flex items-center justify-between">
+            <div className="p-4 bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 rounded-2xl flex items-center justify-between shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)]">
               <div>
-                <div className="font-bold text-stone-900 dark:text-white">
+                <div className="font-black text-sm text-stone-900 dark:text-white">
                   المؤثرات الصوتية للأذان ومؤقت بومودورو
                 </div>
                 <p className="text-stone-500 dark:text-stone-400 mt-0.5">
@@ -254,30 +471,49 @@ export const Settings: React.FC<SettingsProps> = ({
                 type="checkbox"
                 checked={form.enableAudioNotifications}
                 onChange={(e) =>
-                  setForm({ ...form, enableAudioNotifications: e.target.checked })
+                  updateField('enableAudioNotifications', e.target.checked)
                 }
-                className="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                className="w-5 h-5 rounded-lg text-emerald-600 cursor-pointer"
+              />
+            </div>
+
+            {/* Night Study Mode (وضع المذاكرة الليلية) */}
+            <div className="p-4 bg-gradient-to-br from-indigo-950/40 to-stone-950/60 border border-indigo-500/40 rounded-2xl flex items-center justify-between shadow-md">
+              <div>
+                <div className="font-black text-sm text-indigo-200 flex items-center gap-2">
+                  <span>🌙 وضع المذاكرة الليلية (Night Study Mode)</span>
+                  <span className="bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">فلتر الضوء الأزرق + توفير الطاقة</span>
+                </div>
+                <p className="text-indigo-300/80 text-xs mt-1">
+                  تقليل الضوء الأزرق تلقائياً لراحة العينين ليلاً، تفعيل شاشة مريحة، ومؤقت مخصص لجلسات المذاكرة المتأخرة
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.enableNightStudyMode || false}
+                onChange={(e) => updateField('enableNightStudyMode', e.target.checked)}
+                className="w-5 h-5 rounded-lg text-indigo-400 cursor-pointer accent-indigo-600"
               />
             </div>
 
             {/* Visual Style: Claymorphism vs Neo-Brutalism */}
-            <div className="p-3.5 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)]">
               <div>
-                <div className="font-black text-stone-900 dark:text-white">
+                <div className="font-black text-sm text-stone-900 dark:text-white">
                   النمط البصري (Design System Aesthetic)
                 </div>
                 <p className="text-stone-500 dark:text-stone-400 mt-0.5">
-                  اختر بين التصميم المجسم ثلاثي الأبعاد (Claymorphism) أو التصميم العصري الجريء (Neo-Brutalism)
+                  اختر بين التصميم المجسم ثلاثي الأبعاد (Claymorphism 3D) أو التصميم الجريء (Neo-Brutalism)
                 </p>
               </div>
 
-              <div className="flex bg-white dark:bg-stone-900 p-1 rounded-xl border border-stone-300 dark:border-stone-700 shrink-0">
+              <div className="flex bg-white dark:bg-stone-900 p-1.5 rounded-2xl border border-stone-300 dark:border-stone-700 shrink-0 shadow-inner">
                 <button
                   type="button"
-                  onClick={() => setForm({ ...form, visualStyle: 'claymorphism' })}
-                  className={`px-3 py-1.5 rounded-lg font-black text-xs transition-all ${
+                  onClick={() => updateField('visualStyle', 'claymorphism')}
+                  className={`px-3.5 py-1.5 rounded-xl font-black text-xs transition-all ${
                     form.visualStyle !== 'neobrutalism'
-                      ? 'bg-amber-400 text-stone-900 shadow-sm'
+                      ? 'clay-btn-amber shadow-sm'
                       : 'text-stone-600 dark:text-stone-400'
                   }`}
                 >
@@ -285,8 +521,8 @@ export const Settings: React.FC<SettingsProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setForm({ ...form, visualStyle: 'neobrutalism' })}
-                  className={`px-3 py-1.5 rounded-lg font-black text-xs transition-all ${
+                  onClick={() => updateField('visualStyle', 'neobrutalism')}
+                  className={`px-3.5 py-1.5 rounded-xl font-black text-xs transition-all ${
                     form.visualStyle === 'neobrutalism'
                       ? 'bg-[#0F382A] text-amber-300 shadow-sm'
                       : 'text-stone-600 dark:text-stone-400'
@@ -300,7 +536,7 @@ export const Settings: React.FC<SettingsProps> = ({
         </div>
 
         {/* 3. Priority Subjects Selection */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="clay-card p-6 sm:p-7 space-y-4">
           <h3 className="font-black text-base text-stone-900 dark:text-white flex items-center gap-2 pb-3 border-b border-stone-200 dark:border-stone-800">
             <Sparkles className="w-5 h-5 text-amber-500" />
             <span>المواد التي تتطلب تركيزًا ومراجعة إضافية</span>
@@ -310,7 +546,7 @@ export const Settings: React.FC<SettingsProps> = ({
             حدد المواد التي تجد فيها صعوبة ليقترح عليك المنظم أوقات تركيز إضافية لها:
           </p>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {allSubjects.map((sub) => {
               const isSelected = form.weakSubjects?.includes(sub);
 
@@ -319,10 +555,10 @@ export const Settings: React.FC<SettingsProps> = ({
                   key={sub}
                   type="button"
                   onClick={() => toggleWeakSubject(sub)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                  className={`px-3.5 py-2 rounded-2xl text-xs font-black transition-all active:scale-95 cursor-pointer ${
                     isSelected
-                      ? 'bg-amber-400 text-stone-950 border-amber-500 shadow-sm'
-                      : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-700 hover:bg-stone-200'
+                      ? 'clay-btn-amber shadow-sm'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)]'
                   }`}
                 >
                   {isSelected ? `✓ ${sub}` : `+ ${sub}`}
@@ -336,7 +572,7 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            className="px-6 py-2.5 bg-[#0F382A] hover:bg-emerald-900 text-amber-300 font-black text-sm rounded-xl transition-all shadow-md flex items-center gap-2"
+            className="clay-btn-emerald px-7 py-3 text-white font-black text-sm flex items-center gap-2 transition-transform active:scale-95 cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>حفظ الإعدادات</span>
@@ -350,9 +586,25 @@ export const Settings: React.FC<SettingsProps> = ({
         </div>
 
       </form>
+ 
+      {/* 4. Weekly Study & Prayers Progress Chart (Recharts Line Chart) */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-emerald-800 dark:text-emerald-400" />
+          <h3 className="font-black text-base text-stone-900 dark:text-white">
+            مخطط الأداء الأسبوعي (تطور دقائق الدراسة والصلوات المنجزة)
+          </h3>
+        </div>
+        <StudyWeeklyChart
+          stats={currentStats}
+          dailyPrayers={dailyPrayers}
+          title="مخطط تطور دقائق المذاكرة والصلوات الخمس (آخر 7 أيام)"
+          subtitle="مخطط بياني تفاعلي باستخدام Recharts لتتبع التوازن بين التحصيل الدراسي والعبادة"
+        />
+      </div>
 
-      {/* 4. Data Backup & Reset */}
-      <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm space-y-4">
+      {/* 5. Data Backup & Reset */}
+      <div className="clay-card p-6 sm:p-7 space-y-4">
         <h3 className="font-black text-base text-stone-900 dark:text-white flex items-center gap-2 pb-3 border-b border-stone-200 dark:border-stone-800">
           <ShieldCheck className="w-5 h-5 text-teal-600" />
           <span>الخصوصية والنسخ الاحتياطي للبيانات</span>
@@ -365,13 +617,13 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="flex flex-wrap items-center gap-3 pt-2">
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs rounded-xl flex items-center gap-2 border border-stone-300 dark:border-stone-700"
+            className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs rounded-2xl flex items-center gap-2 shadow-[2px_3px_8px_rgba(0,0,0,0.06),inset_1px_1px_2px_rgba(255,255,255,0.8)] border border-stone-200/80 dark:border-stone-700 transition-all active:scale-95 cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>تصدير نسخة احتياطية (JSON)</span>
           </button>
 
-          <label className="px-4 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs rounded-xl flex items-center gap-2 border border-stone-300 dark:border-stone-700 cursor-pointer">
+          <label className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs rounded-2xl flex items-center gap-2 shadow-[2px_3px_8px_rgba(0,0,0,0.06),inset_1px_1px_2px_rgba(255,255,255,0.8)] border border-stone-200/80 dark:border-stone-700 cursor-pointer transition-all active:scale-95">
             <Upload className="w-4 h-4" />
             <span>استيراد نسخة سابقة</span>
             <input
@@ -382,10 +634,22 @@ export const Settings: React.FC<SettingsProps> = ({
             />
           </label>
 
+          {onClearDemoData && (
+            <button
+              type="button"
+              onClick={onClearDemoData}
+              className="px-4 py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-black text-xs rounded-2xl flex items-center gap-1.5 border border-amber-300 shadow-[3px_4px_10px_rgba(217,119,6,0.15),inset_1px_1px_2px_rgba(255,255,255,0.7)] active:scale-95 transition-all cursor-pointer"
+              title="حذف جميع الواجبات والامتحانات والإحصائيات التجريبية"
+            >
+              <Trash2 className="w-4 h-4 text-amber-700" />
+              <span>حذف كل البيانات التجريبية (Supprimer données démo)</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setIsResetConfirmOpen(true)}
-            className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-900 font-black text-xs rounded-xl flex items-center gap-1.5 border-2 border-stone-900 shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] mr-auto transition-all"
+            className="px-4 py-2.5 bg-red-100/80 hover:bg-red-200 text-red-900 font-black text-xs rounded-2xl flex items-center gap-1.5 border border-red-300 shadow-[3px_4px_10px_rgba(239,68,68,0.15),inset_1px_1px_2px_rgba(255,255,255,0.7)] active:scale-95 mr-auto transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
             <span>إعادة ضبط المصنع (Factory Reset)</span>
@@ -399,10 +663,10 @@ export const Settings: React.FC<SettingsProps> = ({
 
       {/* In-App Factory Reset Confirmation Modal (safe for iFrame environments) */}
       {isResetConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-[#FAF8F5] dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-100 rounded-3xl w-full max-w-md p-6 shadow-[6px_6px_0px_0px_#1c1917] dark:shadow-[6px_6px_0px_0px_#000] space-y-4">
-            <div className="flex items-center gap-3 pb-3 border-b-2 border-stone-900 dark:border-stone-700">
-              <div className="w-10 h-10 rounded-xl bg-red-500 text-white border-2 border-stone-900 flex items-center justify-center font-black text-lg shadow-[2px_2px_0px_#000]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="clay-card bg-[#FAF8F5] dark:bg-stone-900 w-full max-w-md p-6 sm:p-7 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-stone-200 dark:border-stone-700">
+              <div className="w-11 h-11 rounded-2xl bg-red-500 text-white flex items-center justify-center font-black text-lg shadow-[3px_4px_10px_rgba(239,68,68,0.3),inset_1.5px_1.5px_3px_rgba(255,255,255,0.5)] border border-red-400">
                 ⚠️
               </div>
               <div>
@@ -425,7 +689,7 @@ export const Settings: React.FC<SettingsProps> = ({
               <button
                 type="button"
                 onClick={() => setIsResetConfirmOpen(false)}
-                className="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded-xl border border-stone-400 transition-colors"
+                className="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded-2xl transition-all cursor-pointer active:scale-95"
               >
                 إلغاء التراجع
               </button>
@@ -435,7 +699,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   setIsResetConfirmOpen(false);
                   onResetAll();
                 }}
-                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-xl border-2 border-stone-900 shadow-[3px_3px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded-2xl shadow-[4px_6px_14px_rgba(220,38,38,0.3),inset_1.5px_1.5px_3px_rgba(255,255,255,0.4)] active:scale-95 transition-all cursor-pointer"
               >
                 نعم، استعادة ضبط المصنع الآن
               </button>

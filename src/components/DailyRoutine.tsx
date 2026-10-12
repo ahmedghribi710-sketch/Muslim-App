@@ -27,6 +27,7 @@ import {
   getDayEndInfo,
 } from '../utils/smartScheduler';
 import { sound } from '../utils/sound';
+import { TakiAcademyLogo } from './TakiAcademyLogo';
 
 interface DailyRoutineProps {
   prayers: PrayerTimeData;
@@ -70,7 +71,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       case 'quran':
         return <BookOpen className="w-4 h-4 text-teal-600" />;
       case 'taki':
-        return <GraduationCap className="w-4 h-4 text-indigo-600" />;
+        return <TakiAcademyLogo variant="icon" size="xs" className="w-4 h-4" />;
       case 'school':
         return <School className="w-4 h-4 text-blue-600" />;
       case 'study':
@@ -108,7 +109,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       </div>
 
       {/* Day Selector Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-print">
+      <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 no-print scrollbar-none">
         {DAY_ORDER.map((day) => {
           const isSelected = selectedDay === day;
           const isToday = day === todayDay;
@@ -117,10 +118,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             <button
               key={day}
               onClick={() => setSelectedDay(day)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 shrink-0 ${
+              className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer ${
                 isSelected
-                  ? 'bg-[#0F382A] text-amber-300 border-emerald-950 shadow-md'
-                  : 'bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100'
+                  ? 'bg-gradient-to-br from-[#165b44] to-[#0F382A] text-amber-300 shadow-[5px_7px_16px_rgba(15,56,42,0.25),inset_2px_2px_4px_rgba(255,255,255,0.35),inset_-2px_-2px_4px_rgba(0,0,0,0.3)] border border-emerald-400/30'
+                  : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 shadow-[4px_6px_14px_rgba(0,0,0,0.06),-2px_-2px_8px_rgba(255,255,255,0.9),inset_1.5px_1.5px_3px_rgba(255,255,255,0.8),inset_-1.5px_-1.5px_3px_rgba(0,0,0,0.04)] border border-white/80 dark:border-stone-700/60 hover:-translate-y-0.5'
               }`}
             >
               <span>{ARABIC_DAYS[day]}</span>
@@ -133,22 +134,22 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       </div>
 
       {/* Day Overview Summary Card */}
-      <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-sm">
+      <div className="clay-card p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-black text-stone-900 dark:text-white">
+            <div className="flex items-center gap-2.5">
+              <span className="text-lg font-black text-stone-900 dark:text-white">
                 خطة يوم {ARABIC_DAYS[selectedDay]}
               </span>
-              <span className="text-xs bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-3 py-1 rounded-full font-black shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)] border border-emerald-200 dark:border-emerald-800">
                 {daySummary.isSchoolDay
                   ? `دوام مدرسي (الوصول للمنزل ${daySummary.homeArrival})`
                   : 'عطلة نهاية الأسبوع'}
               </span>
             </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+            <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1">
               الوقت المتاح للمراجعة قبل حصة Taki Academy:{' '}
-              <strong className="text-amber-700 dark:text-amber-400">
+              <strong className="text-amber-700 dark:text-amber-400 font-black">
                 {daySummary.availableStudyMinutesBeforeTaki} دقيقة
               </strong>
             </p>
@@ -158,13 +159,13 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           <div className="min-w-[200px] space-y-1.5">
             <div className="flex justify-between text-xs font-bold">
               <span className="text-stone-600 dark:text-stone-300">إنجاز الروتين:</span>
-              <span className="text-emerald-700 dark:text-emerald-400">
+              <span className="text-emerald-700 dark:text-emerald-400 font-black">
                 {completedCount} / {routine.length} ({progressPercent}%)
               </span>
             </div>
-            <div className="w-full bg-stone-200 dark:bg-stone-800 h-2.5 rounded-full overflow-hidden">
+            <div className="w-full bg-stone-200/80 dark:bg-stone-800 h-3 rounded-full overflow-hidden shadow-inner">
               <div
-                className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                className="bg-emerald-600 dark:bg-emerald-500 h-full rounded-full transition-all duration-500 shadow-sm"
                 style={{ width: `${progressPercent}%` }}
               ></div>
             </div>
@@ -173,10 +174,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
         {/* Workload smart analyzer warning banner */}
         {workload.isOverloaded ? (
-          <div className="mt-4 p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl flex items-start gap-3 text-xs text-amber-900 dark:text-amber-200">
+          <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl flex items-start gap-3 text-xs text-amber-900 dark:text-amber-200 shadow-[inset_1.5px_1.5px_3px_rgba(255,255,255,0.7)]">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <div className="font-bold">تنبيه ذكي: حمل الواجبات يتجاوز الوقت المتاح اليوم!</div>
+              <div className="font-bold text-sm">تنبيه ذكي: حمل الواجبات يتجاوز الوقت المتاح اليوم!</div>
               {workload.recommendations.map((rec, i) => (
                 <p key={i} className="text-stone-700 dark:text-stone-300">
                   • {rec}
@@ -185,7 +186,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             </div>
           </div>
         ) : (
-          <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">
+          <div className="mt-4 p-3.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-xs text-emerald-800 dark:text-emerald-300 font-bold shadow-[inset_1.5px_1.5px_3px_rgba(255,255,255,0.6)]">
             ✓ جدول اليوم متناسق جدًا. ستنهي كل واجباتك براحة قبل حصة Taki Academy في 19:30.
           </div>
         )}
@@ -193,20 +194,19 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
       {/* Routine Timeline */}
       <div className="space-y-3">
-        {routine.map((item, index) => {
+        {routine.map((item) => {
           const isDone = completedRoutineIds.includes(item.id);
           const isTaki = item.category === 'taki';
-          const isPrayer = item.category === 'prayer';
 
           return (
             <div
               key={item.id}
-              className={`p-4 rounded-2xl border-2 transition-all ${
+              className={`p-4 sm:p-5 rounded-3xl transition-all ${
                 isTaki
-                  ? 'bg-gradient-to-r from-indigo-900/10 via-purple-900/10 to-indigo-950/20 border-indigo-500/60 shadow-sm'
+                  ? 'bg-gradient-to-r from-indigo-50/90 via-purple-50/80 to-indigo-100/90 dark:from-indigo-950/60 dark:to-purple-950/40 border border-indigo-300/80 dark:border-indigo-700/60 shadow-[6px_10px_22px_rgba(79,70,229,0.12),inset_2px_2px_4px_rgba(255,255,255,0.9),inset_-2px_-2px_4px_rgba(0,0,0,0.05)]'
                   : isDone
-                  ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-400/60 opacity-80'
-                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:border-stone-400'
+                  ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-300/60 opacity-80 shadow-[inset_1.5px_1.5px_3px_rgba(0,0,0,0.03)]'
+                  : 'clay-card'
               }`}
             >
               <div className="flex items-start justify-between gap-3">
@@ -217,10 +217,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                       sound.playSuccess();
                       onToggleRoutineItem(item.id);
                     }}
-                    className={`mt-0.5 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ${
+                    className={`mt-0.5 w-7 h-7 rounded-2xl border flex items-center justify-center transition-all shrink-0 cursor-pointer ${
                       isDone
-                        ? 'bg-emerald-600 border-emerald-600 text-white'
-                        : 'border-stone-400 hover:border-emerald-600'
+                        ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                        : 'border-stone-300 bg-white dark:bg-stone-800 hover:border-emerald-600 shadow-inner'
                     }`}
                   >
                     {isDone && <Check className="w-4 h-4 stroke-[3]" />}
@@ -235,7 +235,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                             isDone
                               ? 'line-through text-stone-500 dark:text-stone-400'
                               : isTaki
-                              ? 'text-indigo-900 dark:text-indigo-300 text-base'
+                              ? 'text-indigo-900 dark:text-indigo-200 text-base'
                               : 'text-stone-900 dark:text-white'
                           }`}
                         >
@@ -243,13 +243,13 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                         </span>
                       </div>
 
-                      <span className="font-mono text-xs bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-2 py-0.5 rounded-md font-bold">
+                      <span className="font-mono text-xs bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
                         {item.timeRange}
                       </span>
 
                       {item.badge && (
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          className={`text-[10px] px-2.5 py-0.5 rounded-full font-black ${
                             isTaki
                               ? 'bg-indigo-600 text-white shadow-sm'
                               : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
@@ -270,7 +270,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
                 {/* Fixed tag */}
                 {item.isFixed && (
-                  <span className="text-[10px] bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded font-bold shrink-0">
+                  <span className="text-[10px] bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-2.5 py-0.5 rounded-full font-bold shrink-0">
                     ثابت
                   </span>
                 )}
@@ -281,12 +281,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       </div>
 
       {/* Bedtime & Next Day Prep Notice */}
-      <div className="bg-[#FAF8F5] dark:bg-stone-900 border border-stone-300 dark:border-stone-800 rounded-2xl p-4 text-xs text-stone-600 dark:text-stone-400 space-y-1">
-        <div className="font-bold text-stone-900 dark:text-stone-200 flex items-center gap-1.5">
+      <div className="clay-card p-5 text-xs text-stone-600 dark:text-stone-400 space-y-1.5 bg-[#FAF8F5] dark:bg-stone-900">
+        <div className="font-black text-sm text-stone-900 dark:text-stone-200 flex items-center gap-1.5">
           <Moon className="w-4 h-4 text-indigo-500" />
           قاعدة ذهبية لطالب السنة الثامنة أساسي:
         </div>
-        <p>
+        <p className="leading-relaxed">
           بعد الساعة 21:00 انتهاء حصة Taki Academy، يُمنع البدء في حل واجبات جديدة أو سهر متأخر.
           صلِّ العشاء، جهز محفظتك لليوم التالي، واقرأ سورة الملك ونم في حدود 21:45 لتبدأ يومك في 05:30 بنشاط كامل.
         </p>

@@ -126,6 +126,35 @@ class SoundEffects {
       });
     } catch {}
   }
+
+  // Triumphant Fanfare for Daily Challenge completion & Extra XP
+  playChallengeComplete() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+
+      // C5, E5, G5, B5, C6, G6 celebratory arpeggio
+      const notes = [523.25, 659.25, 783.99, 987.77, 1046.5, 1567.98];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+
+        gain.gain.setValueAtTime(0, now + idx * 0.1);
+        gain.gain.linearRampToValueAtTime(0.18, now + idx * 0.1 + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.1 + 0.9);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + idx * 0.1);
+        osc.stop(now + idx * 0.1 + 0.95);
+      });
+    } catch {}
+  }
 }
 
 export const sound = new SoundEffects();

@@ -17,6 +17,7 @@ import { DayOfWeek, SchoolClass, UserSettings } from '../types';
 import { ARABIC_DAYS, DAY_ORDER, getTodayDayOfWeek, parseMinutes } from '../utils/arabicDates';
 import { TIME_SLOTS } from '../utils/defaultData';
 import { getDayEndInfo } from '../utils/smartScheduler';
+import { TakiAcademyLogo } from './TakiAcademyLogo';
 
 interface TimetableProps {
   classes: SchoolClass[];
@@ -145,7 +146,7 @@ export const Timetable: React.FC<TimetableProps> = ({
       </div>
 
       {/* School commute summary pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 no-print">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 no-print">
         {DAY_ORDER.slice(0, 6).map((day) => {
           const info = getDayEndInfo(day, settings.commuteMinutes);
           const isToday = day === todayDay;
@@ -157,18 +158,18 @@ export const Timetable: React.FC<TimetableProps> = ({
                 setSelectedDay(day);
                 if (viewMode === 'day') setViewMode('day');
               }}
-              className={`p-2.5 rounded-xl border-2 cursor-pointer transition-all ${
+              className={`p-3 rounded-2xl cursor-pointer transition-all active:scale-95 ${
                 isToday
-                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 shadow-sm'
-                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 hover:border-stone-400'
+                  ? 'bg-gradient-to-br from-amber-50 to-amber-100/90 dark:from-amber-950/60 dark:to-amber-900/40 border border-amber-300 shadow-[5px_7px_16px_rgba(217,119,6,0.18),inset_2px_2px_4px_rgba(255,255,255,0.9),inset_-2px_-2px_4px_rgba(0,0,0,0.05)]'
+                  : 'clay-card hover:-translate-y-0.5'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-stone-900 dark:text-white">
+                <span className="font-black text-xs text-stone-900 dark:text-white">
                   {ARABIC_DAYS[day]}
                 </span>
                 {isToday && (
-                  <span className="text-[9px] bg-amber-400 text-stone-900 font-black px-1.5 py-0.2 rounded-full">
+                  <span className="text-[9px] bg-amber-400 text-stone-900 font-black px-2 py-0.5 rounded-full shadow-sm">
                     اليوم
                   </span>
                 )}
@@ -185,37 +186,41 @@ export const Timetable: React.FC<TimetableProps> = ({
       </div>
 
       {/* Taki Academy Fixed Banner */}
-      <div className="bg-gradient-to-r from-indigo-900 to-[#1e1b4b] text-white p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-md border-2 border-indigo-700/60">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-400 text-stone-900 flex items-center justify-center font-black">
-            <GraduationCap className="w-5 h-5" />
+      <div className="clay-card-indigo p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-white dark:bg-stone-800 p-1 flex items-center justify-center font-black shadow-[2px_3px_8px_rgba(0,0,0,0.2),inset_1.5px_1.5px_3px_rgba(255,255,255,0.7)] border-2 border-sky-400 shrink-0">
+            <TakiAcademyLogo variant="icon" size="sm" className="w-8 h-8" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-sm text-amber-300">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-black text-base text-amber-300">
                 Taki Academy (التزام يومي ثابت)
               </span>
-              <span className="text-xs bg-indigo-800 text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-600">
+              <span className="text-xs bg-indigo-950/80 text-sky-200 px-3 py-0.5 rounded-full border border-sky-400/40 font-bold">
                 19:30 – 21:00
               </span>
             </div>
-            <p className="text-xs text-indigo-200/90 mt-0.5">
+            <p className="text-xs text-indigo-100/90 mt-0.5 leading-relaxed">
               مدرجة كل يوم من الاثنين إلى الأحد. لا يجوز وضع واجبات أو مواعيد أثناء هذا الوقت.
             </p>
           </div>
         </div>
-        <span className="hidden sm:inline-block text-xs font-bold text-amber-300 bg-indigo-950/80 px-3 py-1 rounded-lg border border-indigo-700">
+        <span className="self-start sm:self-auto text-xs font-black text-amber-300 bg-indigo-950/90 px-3.5 py-1.5 rounded-xl border border-indigo-500/50 shadow-sm shrink-0">
           تنبيه تلقائي 19:15 ⏰
         </span>
       </div>
 
       {/* VIEW: Weekly Grid */}
       {viewMode === 'week' ? (
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="clay-card overflow-hidden">
+          {/* Mobile swipe hint */}
+          <div className="sm:hidden bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-[11px] text-stone-500 text-center font-bold border-b border-stone-200 dark:border-stone-700">
+            ↔ اسحب الجدول أفقيًا لتصفح كامل أيام وأوقات الأسبوع
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right border-collapse min-w-[760px]">
               <thead>
-                <tr className="bg-stone-100 dark:bg-stone-800/80 border-b-2 border-stone-300 dark:border-stone-700 text-xs text-stone-700 dark:text-stone-300 font-bold">
+                <tr className="bg-stone-100/90 dark:bg-stone-800/80 border-b border-stone-200 dark:border-stone-700 text-xs text-stone-700 dark:text-stone-300 font-bold">
                   <th className="p-3 w-28 text-center border-l border-stone-200 dark:border-stone-700">
                     اليوم / الفترة
                   </th>

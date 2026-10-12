@@ -7,6 +7,7 @@ import {
   UserStats,
   QuranProgress,
   DailyPrayerRecord,
+  DailyChallengeRecord,
 } from '../types';
 import {
   DEFAULT_SCHOOL_CLASSES,
@@ -26,9 +27,80 @@ const KEYS = {
   QURAN: 'muslim_planner_quran_v1',
   PRAYERS_PREFIX: 'muslim_planner_prayers_',
   ROUTINE_PREFIX: 'muslim_planner_routine_',
+  CHALLENGE_PREFIX: 'muslim_planner_challenge_',
+  CHALLENGE_POPUP_PREFIX: 'muslim_planner_challenge_popup_',
+  LAST_MODIFIED: 'muslim_planner_last_modified_v1',
+  DEMO_PURGED: 'muslim_planner_demo_purged_v1',
 };
 
 export const storage = {
+  getLastModified(): number {
+    try {
+      const ts = localStorage.getItem(KEYS.LAST_MODIFIED);
+      return ts ? Number(ts) : 0;
+    } catch {
+      return 0;
+    }
+  },
+
+  recordLastModified(ts?: number): void {
+    try {
+      localStorage.setItem(KEYS.LAST_MODIFIED, String(ts || Date.now()));
+    } catch (e) {
+      console.error('Failed to record last modified:', e);
+    }
+  },
+
+  isDemoPurged(): boolean {
+    try {
+      return localStorage.getItem(KEYS.DEMO_PURGED) === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  setDemoPurged(purged: boolean): void {
+    try {
+      localStorage.setItem(KEYS.DEMO_PURGED, purged ? 'true' : 'false');
+    } catch (e) {
+      console.error('Failed to set demo purged flag:', e);
+    }
+  },
+
+  getDailyChallengeRecord(dateStr: string): DailyChallengeRecord | null {
+    try {
+      const data = localStorage.getItem(`${KEYS.CHALLENGE_PREFIX}${dateStr}`);
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  saveDailyChallengeRecord(record: DailyChallengeRecord): void {
+    try {
+      localStorage.setItem(`${KEYS.CHALLENGE_PREFIX}${record.date}`, JSON.stringify(record));
+      this.recordLastModified();
+    } catch (e) {
+      console.error('Failed to save daily challenge record:', e);
+    }
+  },
+
+  hasSeenDailyChallengePopup(dateStr: string): boolean {
+    try {
+      return localStorage.getItem(`${KEYS.CHALLENGE_POPUP_PREFIX}${dateStr}`) === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  markDailyChallengePopupSeen(dateStr: string): void {
+    try {
+      localStorage.setItem(`${KEYS.CHALLENGE_POPUP_PREFIX}${dateStr}`, 'true');
+    } catch (e) {
+      console.error('Failed to mark challenge popup seen:', e);
+    }
+  },
+
   getClasses(): SchoolClass[] {
     try {
       const data = localStorage.getItem(KEYS.CLASSES);
@@ -41,6 +113,7 @@ export const storage = {
   saveClasses(classes: SchoolClass[]): void {
     try {
       localStorage.setItem(KEYS.CLASSES, JSON.stringify(classes));
+      this.recordLastModified();
     } catch (e) {
       console.error('Failed to save classes:', e);
     }
@@ -58,6 +131,7 @@ export const storage = {
   saveHomework(items: HomeworkItem[]): void {
     try {
       localStorage.setItem(KEYS.HOMEWORK, JSON.stringify(items));
+      this.recordLastModified();
     } catch (e) {
       console.error('Failed to save homework:', e);
     }
@@ -75,6 +149,7 @@ export const storage = {
   saveExams(items: ExamItem[]): void {
     try {
       localStorage.setItem(KEYS.EXAMS, JSON.stringify(items));
+      this.recordLastModified();
     } catch (e) {
       console.error('Failed to save exams:', e);
     }
@@ -92,6 +167,7 @@ export const storage = {
   saveSettings(settings: UserSettings): void {
     try {
       localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
+      this.recordLastModified();
     } catch (e) {
       console.error('Failed to save settings:', e);
     }
@@ -109,6 +185,7 @@ export const storage = {
   saveBadges(badges: AchievementBadge[]): void {
     try {
       localStorage.setItem(KEYS.BADGES, JSON.stringify(badges));
+      this.recordLastModified();
     } catch (e) {
       console.error('Failed to save badges:', e);
     }
@@ -116,15 +193,16 @@ export const storage = {
 
   getStats(): UserStats {
     const defaultStats: UserStats = {
-      xp: 420,
-      level: 3,
-      streakDays: 5,
+      xp: 0,
+      level: 1,
+      streakDays: 0,
       lastActiveDate: new Date().toISOString().split('T')[0],
-      completedTasksCount: 14,
-      completedPrayersCount: 22,
-      totalStudyMinutes: 210,
-      takiSessionsAttended: 6,
-      quranPagesTotal: 18,
+      completedTasksCount: 0,
+      completedPrayersCount: 0,
+      totalStudyMinutes: 0,
+      takiSessionsAttended: 0,
+      quranPagesTotal: 0,
+      weeklyHistory: [],
     };
     try {
       const data = localStorage.getItem(KEYS.STATS);
@@ -137,6 +215,7 @@ export const storage = {
   saveStats(stats: UserStats): void {
     try {
       localStorage.setItem(KEYS.STATS, JSON.stringify(stats));
+      this.recordLastModified();
     } catch (e) {
       console.error('Failed to save stats:', e);
     }
@@ -144,14 +223,14 @@ export const storage = {
 
   getQuranProgress(): QuranProgress {
     const defaultQuran: QuranProgress = {
-      currentPage: 32,
+      currentPage: 1,
       dailyGoalPages: 2,
-      pagesReadToday: 2,
+      pagesReadToday: 0,
       lastUpdated: new Date().toISOString().split('T')[0],
-      currentSurah: 'البقرة',
-      currentJuz: 2,
-      memorizedSurahs: ['الفاتحة', 'النبأ', 'الملك', 'الإخلاص', 'الفلق', 'الناس'],
-      reviewedSurahs: ['الملك', 'النبأ'],
+      currentSurah: 'الفاتحة',
+      currentJuz: 1,
+      memorizedSurahs: [],
+      reviewedSurahs: [],
     };
     try {
       const data = localStorage.getItem(KEYS.QURAN);
@@ -164,6 +243,7 @@ export const storage = {
   saveQuranProgress(quran: QuranProgress): void {
     try {
       localStorage.setItem(KEYS.QURAN, JSON.stringify(quran));
+      this.recordLastModified();
     } catch (e) {
       console.error('Failed to save quran progress:', e);
     }
@@ -191,21 +271,23 @@ export const storage = {
   saveDailyPrayers(dateStr: string, prayers: DailyPrayerRecord): void {
     try {
       localStorage.setItem(`${KEYS.PRAYERS_PREFIX}${dateStr}`, JSON.stringify(prayers));
+      this.recordLastModified();
     } catch (e) {}
   },
 
   getCompletedRoutineIds(dateStr: string): string[] {
     try {
       const data = localStorage.getItem(`${KEYS.ROUTINE_PREFIX}${dateStr}`);
-      return data ? JSON.parse(data) : ['r-wake', 'r-fajr', 'r-quran-morning'];
+      return data ? JSON.parse(data) : [];
     } catch {
-      return ['r-wake', 'r-fajr', 'r-quran-morning'];
+      return [];
     }
   },
 
   saveCompletedRoutineIds(dateStr: string, ids: string[]): void {
     try {
       localStorage.setItem(`${KEYS.ROUTINE_PREFIX}${dateStr}`, JSON.stringify(ids));
+      this.recordLastModified();
     } catch (e) {}
   },
 
@@ -241,12 +323,70 @@ export const storage = {
     }
   },
 
+  /**
+   * Completely purges all demo homework, exams, fake stats, and scratchpad notes.
+   * Leaves a pristine workspace for real student usage.
+   */
+  clearAllDemoData(): void {
+    try {
+      // Clear homework and exams
+      localStorage.setItem(KEYS.HOMEWORK, JSON.stringify([]));
+      localStorage.setItem(KEYS.EXAMS, JSON.stringify([]));
+
+      // Reset stats to zero
+      const cleanStats: UserStats = {
+        xp: 0,
+        level: 1,
+        streakDays: 0,
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        completedTasksCount: 0,
+        completedPrayersCount: 0,
+        totalStudyMinutes: 0,
+        takiSessionsAttended: 0,
+        quranPagesTotal: 0,
+        weeklyHistory: [],
+      };
+      this.saveStats(cleanStats);
+
+      // Lock all badges
+      this.saveBadges(INITIAL_BADGES);
+
+      // Clean Quran progress
+      this.saveQuranProgress({
+        currentPage: 1,
+        dailyGoalPages: 2,
+        pagesReadToday: 0,
+        lastUpdated: new Date().toISOString().split('T')[0],
+        currentSurah: 'الفاتحة',
+        currentJuz: 1,
+        memorizedSurahs: [],
+        reviewedSurahs: [],
+      });
+
+      // Clear scratchpad notes
+      localStorage.removeItem('muslim_student_focus_notes');
+      localStorage.removeItem('muslim_student_focus_freeform');
+
+      // Clear all saved routine checkmarks
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith(KEYS.ROUTINE_PREFIX) || k.startsWith(KEYS.PRAYERS_PREFIX))) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {
+      console.error('Failed to clear demo data:', e);
+    }
+  },
+
   resetAllData(): void {
     try {
       localStorage.clear();
       this.saveClasses(DEFAULT_SCHOOL_CLASSES);
-      this.saveHomework(INITIAL_HOMEWORK);
-      this.saveExams(INITIAL_EXAMS);
+      this.saveHomework([]);
+      this.saveExams([]);
       this.saveSettings(INITIAL_SETTINGS);
       this.saveBadges(INITIAL_BADGES);
     } catch (e) {

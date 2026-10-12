@@ -104,6 +104,7 @@ export interface UserSettings {
   pomodoroBreakMinutes: number; // default 5
   theme: 'light' | 'dark' | 'system';
   visualStyle?: 'neobrutalism' | 'claymorphism';
+  enableNightStudyMode?: boolean;
 }
 
 export interface AchievementBadge {
@@ -116,6 +117,32 @@ export interface AchievementBadge {
   xpValue: number;
 }
 
+export interface DailyStudyRecord {
+  date: string; // YYYY-MM-DD
+  dayLabel: string; // e.g. "الأحد", "الاثنين"
+  studyMinutes: number;
+  xpGained: number;
+  prayersCompleted?: number; // 0 to 5 completed prayers
+}
+
+export interface DailyChallenge {
+  id: string;
+  title: string;
+  description: string;
+  category: 'worship' | 'study' | 'taki' | 'quran' | 'morals' | 'focus';
+  categoryLabel: string;
+  xpReward: number; // e.g. 75
+  icon: string;
+}
+
+export interface DailyChallengeRecord {
+  date: string; // YYYY-MM-DD
+  challengeId: string;
+  completed: boolean;
+  completedAt?: string;
+  xpAwarded: number;
+}
+
 export interface UserStats {
   xp: number;
   level: number;
@@ -126,4 +153,5 @@ export interface UserStats {
   totalStudyMinutes: number;
   takiSessionsAttended: number;
   quranPagesTotal: number;
+  weeklyHistory?: DailyStudyRecord[];
 }

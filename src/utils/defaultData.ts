@@ -1,4 +1,4 @@
-import { SchoolClass, HomeworkItem, ExamItem, UserSettings, AchievementBadge } from '../types';
+import { SchoolClass, HomeworkItem, ExamItem, UserSettings, AchievementBadge, DailyChallenge } from '../types';
 
 export const DEFAULT_SCHOOL_CLASSES: SchoolClass[] = [
   // الاثنين (Monday: 08:15 to 15:15 -> home 15:30)
@@ -63,71 +63,12 @@ export const TIME_SLOTS = [
   { start: '16:15', end: '17:15', label: 'الحصة 8' },
 ];
 
-export const INITIAL_HOMEWORK: HomeworkItem[] = [
-  {
-    id: 'hw-1',
-    subject: 'رياضيات',
-    title: 'تمارين الكتاب المدرسي ص 42 (الأعداد الكسرية)',
-    description: 'حل التمارين 3 و 5 و 8 من محور الأعداد النسبية والكسرية',
-    dueDate: new Date().toISOString().split('T')[0],
-    priority: 'high',
-    estimatedMinutes: 35,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'hw-2',
-    subject: 'فرنسية',
-    title: 'Production écrite: Décrire un lieu historique',
-    description: 'Rédiger 10 lignes sur la Médina de Tunis ou Carthage',
-    dueDate: new Date().toISOString().split('T')[0],
-    priority: 'medium',
-    estimatedMinutes: 30,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'hw-3',
-    subject: 'علوم فيزيائية',
-    title: 'مراجعة درس التيار الكهربائي المستمر',
-    description: 'رسم الدارة الكهربائية وحفظ القواعد',
-    dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-    priority: 'medium',
-    estimatedMinutes: 25,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  },
-];
+export const INITIAL_HOMEWORK: HomeworkItem[] = [];
 
-export const INITIAL_EXAMS: ExamItem[] = [
-  {
-    id: 'exam-1',
-    subject: 'رياضيات',
-    title: 'فرض مراقبة عدد 1 في الجبر والهندسة',
-    date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-    syllabus: 'الأعداد الكسرية، العمليات، والتوازي والتعامد',
-    completed: false,
-  },
-  {
-    id: 'exam-2',
-    subject: 'علوم الحياة والأرض',
-    title: 'فرض مراقبة عدد 1',
-    date: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
-    syllabus: 'التنفس عند الإنسان والتغذية',
-    completed: false,
-  },
-  {
-    id: 'exam-3',
-    subject: 'عربية',
-    title: 'فرض مراقبة في دراسة النص والإنشاء',
-    date: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-    syllabus: 'محور الطبيعة وأساليب الإنشاء التعبيرية',
-    completed: false,
-  },
-];
+export const INITIAL_EXAMS: ExamItem[] = [];
 
 export const INITIAL_SETTINGS: UserSettings = {
-  studentName: 'أحمد',
+  studentName: 'تلميذ 8 أساسي',
   wakeUpTime: '05:30',
   targetBedTime: '21:45',
   commuteMinutes: 15,
@@ -135,20 +76,21 @@ export const INITIAL_SETTINGS: UserSettings = {
   prayerCalcMethod: 'tunisia',
   enableAudioNotifications: true,
   enableTakiAlert: true,
-  weakSubjects: ['رياضيات', 'فرنسية'],
+  weakSubjects: [],
   pomodoroWorkMinutes: 25,
   pomodoroBreakMinutes: 5,
   theme: 'light',
   visualStyle: 'claymorphism',
+  enableNightStudyMode: false,
 };
 
 export const INITIAL_BADGES: AchievementBadge[] = [
-  { id: 'b-fajr', title: 'حارس الفجر', description: 'أداء صلاة الفجر في وقتها 3 أيام متتالية', icon: 'Sun', unlocked: true, unlockedAt: '2026-10-09', xpValue: 50 },
-  { id: 'b-quran', title: 'صاحب القرآن', description: 'قراءة الورد اليومي لـ 5 أيام متتالية', icon: 'BookOpen', unlocked: true, unlockedAt: '2026-10-10', xpValue: 75 },
-  { id: 'b-taki', title: 'نجم Taki Academy', description: 'حضور حصة تقي أكاديمي اليومية دون انقطاع', icon: 'GraduationCap', unlocked: true, unlockedAt: '2026-10-11', xpValue: 100 },
+  { id: 'b-fajr', title: 'حارس الفجر', description: 'أداء صلاة الفجر في وقتها 3 أيام متتالية', icon: 'Sun', unlocked: false, xpValue: 50 },
+  { id: 'b-quran', title: 'صاحب القرآن', description: 'قراءة الورد اليومي لـ 5 أيام متتالية', icon: 'BookOpen', unlocked: false, xpValue: 75 },
+  { id: 'b-taki', title: 'نجم Taki Academy', description: 'حضور حصة تقي أكاديمي اليومية دون انقطاع', icon: 'GraduationCap', unlocked: false, xpValue: 100 },
   { id: 'b-hw', title: 'فارس الواجبات', description: 'إنجاز جميع واجبات اليوم قبل موعد Taki Academy', icon: 'CheckCircle2', unlocked: false, xpValue: 60 },
   { id: 'b-focus', title: 'سيد التركيز', description: 'إتمام 4 جلسات دراسة بومودورو مركزة', icon: 'Timer', unlocked: false, xpValue: 80 },
-  { id: 'b-sleep', title: 'النوم المبكر المبارك', description: 'النوم في الوقت المستهدف (قبل 22:00) والاستيقاظ 05:30', icon: 'Moon', unlocked: true, unlockedAt: '2026-10-10', xpValue: 40 },
+  { id: 'b-sleep', title: 'النوم المبكر المبارك', description: 'النوم في الوقت المستهدف (قبل 22:00) والاستيقاظ 05:30', icon: 'Moon', unlocked: false, xpValue: 40 },
 ];
 
 export const QURAN_SURAHS = [
@@ -201,3 +143,106 @@ export const MORNING_EVENING_ADHKAR = [
     type: 'both'
   }
 ];
+
+export const DAILY_CHALLENGES: DailyChallenge[] = [
+  {
+    id: 'ch-fajr-study',
+    title: 'فجر مبارك ومذاكرة ذهبية',
+    description: 'أداء صلاة الفجر في وقتها الحاضر، مع تخصيص 20-30 دقيقة للمراجعة الهادئة قبل الذهاب إلى المدرسة.',
+    category: 'worship',
+    categoryLabel: 'صلاة ودراسة',
+    xpReward: 70,
+    icon: 'Sun',
+  },
+  {
+    id: 'ch-taki-master',
+    title: 'تألق في حصة Taki Academy',
+    description: 'حضور حصة Taki Academy (19:30 - 21:00) كاملة بتركيز عالٍ وتلخيص أهم 3 قواعد في كراسك الخاص.',
+    category: 'taki',
+    categoryLabel: 'Taki Academy',
+    xpReward: 75,
+    icon: 'GraduationCap',
+  },
+  {
+    id: 'ch-quran-read',
+    title: 'ورد القرآن الكريم ونور الصدر',
+    description: 'تلاوة صفحتين كاملتين من المصحف الشريف بتؤدة وترتيل مع تدبر معاني آية واحدة على الأقل.',
+    category: 'quran',
+    categoryLabel: 'قرآن كريم',
+    xpReward: 60,
+    icon: 'BookOpen',
+  },
+  {
+    id: 'ch-homework-before-taki',
+    title: 'فارس الواجبات المتقنة',
+    description: 'إنهاء كافة الواجبات المدرسية المبرمجة لليوم قبل موعد Taki Academy (19:30) لتكون مرتاح البال.',
+    category: 'study',
+    categoryLabel: 'تفوق دراسي',
+    xpReward: 65,
+    icon: 'CheckCircle2',
+  },
+  {
+    id: 'ch-sunnah-adhkar',
+    title: 'حصن المسلم وسنن الصلاة',
+    description: 'المحافظة على أذكار الصباح والمساء كاملة مع أداء سنة صلاة الفجر وسنة الظهر البعدية.',
+    category: 'worship',
+    categoryLabel: 'سنن وأذكار',
+    xpReward: 60,
+    icon: 'Heart',
+  },
+  {
+    id: 'ch-pomodoro-focus',
+    title: 'بطل التركيز الفائق (3 جلسات)',
+    description: 'إتمام 3 جلسات بومودورو متتالية (25 دقيقة مذاكرة مركزة لكل جلسة) دون تشتت أو لمس الهاتف.',
+    category: 'focus',
+    categoryLabel: 'تركيز بومودورو',
+    xpReward: 80,
+    icon: 'Timer',
+  },
+  {
+    id: 'ch-friday-blessing',
+    title: 'بركة يوم الجمعة المبارك',
+    description: 'قراءة سورة الكهف المباركة، الإكثار من الصلاة على الحبيب المصطفى ﷺ (100 مرة)، والدعاء في ساعة الاستجابة.',
+    category: 'worship',
+    categoryLabel: 'يوم الجمعة',
+    xpReward: 85,
+    icon: 'Sparkles',
+  },
+  {
+    id: 'ch-reinforce-weak',
+    title: 'تدارك المواد والتميز الدراسي',
+    description: 'حل تمرينين تطبيقيين إضافيين في مادة تحتاج فيها لدعم (كالرياضيات أو الفيزياء أو الفرنسية).',
+    category: 'study',
+    categoryLabel: 'تحدي المواد',
+    xpReward: 70,
+    icon: 'TrendingUp',
+  },
+  {
+    id: 'ch-mulk-sleep',
+    title: 'سورة الملك والنوم المبكر المبارك',
+    description: 'قراءة سورة الملك المنجية من عذاب القبر قبل النوم، والنوم في الوقت المستهدف (قبل 21:45).',
+    category: 'morals',
+    categoryLabel: 'سنة نبوية ونوم',
+    xpReward: 65,
+    icon: 'Moon',
+  },
+];
+
+export function getDailyChallengeForDate(dateStr: string): DailyChallenge {
+  const date = new Date(dateStr);
+  const dayOfWeek = date.getDay(); // 5 = Friday
+
+  if (dayOfWeek === 5) {
+    const fridayCh = DAILY_CHALLENGES.find((c) => c.id === 'ch-friday-blessing');
+    if (fridayCh) return fridayCh;
+  }
+
+  const nonFriday = DAILY_CHALLENGES.filter((c) => c.id !== 'ch-friday-blessing');
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = (hash << 5) - hash + dateStr.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % nonFriday.length;
+  return nonFriday[index];
+}

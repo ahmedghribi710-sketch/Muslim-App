@@ -21,6 +21,8 @@ import {
   UserStats,
   QuranProgress,
   DailyPrayerRecord,
+  DailyChallenge,
+  DailyChallengeRecord,
 } from '../types';
 import {
   formatGregorianArabic,
@@ -32,6 +34,9 @@ import {
 import { getNextPrayer, NextPrayerInfo } from '../utils/prayerTimes';
 import { sound } from '../utils/sound';
 import confetti from 'canvas-confetti';
+import { StudyWeeklyChart } from './StudyWeeklyChart';
+import { TakiAcademyLogo } from './TakiAcademyLogo';
+import { Trophy, Award } from 'lucide-react';
 
 interface DashboardProps {
   prayers: PrayerTimeData;
@@ -43,10 +48,13 @@ interface DashboardProps {
   dailyPrayers: DailyPrayerRecord;
   completedRoutineIds: string[];
   totalRoutineCount: number;
+  dailyChallenge: DailyChallenge;
+  dailyChallengeRecord: DailyChallengeRecord | null;
   onNavigate: (tab: any) => void;
   onToggleHomework: (id: string) => void;
   onAddQuranPage: () => void;
   onAttendTaki: () => void;
+  onOpenDailyChallengeModal: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -59,10 +67,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
   dailyPrayers,
   completedRoutineIds,
   totalRoutineCount,
+  dailyChallenge,
+  dailyChallengeRecord,
   onNavigate,
   onToggleHomework,
   onAddQuranPage,
   onAttendTaki,
+  onOpenDailyChallengeModal,
 }) => {
   const [currentDate] = useState(new Date());
   const [nextPrayer, setNextPrayer] = useState<NextPrayerInfo>(getNextPrayer(prayers));
@@ -158,10 +169,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
     <div className="space-y-6 pb-12 animate-fade-in">
       
       {/* 1. Header Hero Greeting */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#0F382A] via-[#164e3b] to-[#0d2f23] text-white rounded-3xl p-6 sm:p-8 border-2 border-stone-900 shadow-[5px_5px_0px_0px_#1c1917] dark:shadow-[5px_5px_0px_0px_#000]">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#0F382A] via-[#164e3b] to-[#0d2f23] text-white rounded-3xl p-6 sm:p-8 border border-white/20 shadow-[8px_14px_30px_-4px_rgba(15,56,42,0.35),inset_2px_2px_4px_rgba(255,255,255,0.25),inset_-3px_-3px_8px_rgba(0,0,0,0.4)]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 bg-amber-400 text-stone-950 border border-stone-900 shadow-[2px_2px_0px_#000] px-3 py-1 rounded-full text-xs font-black">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-300 text-stone-950 px-3.5 py-1 rounded-full text-xs font-black shadow-[2px_3px_8px_rgba(217,119,6,0.3),inset_1.5px_1.5px_2px_rgba(255,255,255,0.7)]">
               <span>{formatGregorianArabic(currentDate)}</span>
               <span>•</span>
               <span>{formatHijriArabic(currentDate)}</span>
@@ -178,9 +189,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {/* Goals completion badge */}
-          <div className="bg-stone-900/60 backdrop-blur-md border-2 border-amber-400 rounded-2xl p-4 flex items-center gap-4 min-w-[200px] shadow-[3px_3px_0px_#000]">
-            <div className="relative w-16 h-16 flex items-center justify-center">
-              <svg className="w-16 h-16 -rotate-90 transform" viewBox="0 0 36 36">
+          <div className="w-full sm:w-auto bg-stone-900/40 backdrop-blur-md border border-amber-300/40 rounded-3xl p-3.5 sm:p-4 flex items-center justify-between sm:justify-start gap-4 min-w-0 sm:min-w-[200px] shadow-[6px_10px_20px_rgba(0,0,0,0.25),inset_1.5px_1.5px_3px_rgba(255,255,255,0.2)]">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+              <svg className="w-14 h-14 sm:w-16 sm:h-16 -rotate-90 transform" viewBox="0 0 36 36">
                 <path
                   className="text-emerald-950/40"
                   strokeWidth="3.5"
@@ -198,7 +209,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
               </svg>
-              <span className="absolute font-black text-lg text-amber-300">
+              <span className="absolute font-black text-base sm:text-lg text-amber-300">
                 {completionPercent}%
               </span>
             </div>
@@ -209,7 +220,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <button
                 onClick={() => onNavigate('routine')}
-                className="text-[11px] text-amber-300 hover:underline flex items-center gap-0.5 mt-0.5 font-bold"
+                className="text-[11px] text-amber-300 hover:underline flex items-center gap-0.5 mt-0.5 font-bold cursor-pointer"
               >
                 تفاصيل الروتين <ArrowRight className="w-3 h-3 rotate-180" />
               </button>
@@ -221,41 +232,86 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="absolute -top-12 -left-12 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl pointer-events-none"></div>
       </div>
 
+      {/* Daily Challenge Banner Card */}
+      <div 
+        onClick={onOpenDailyChallengeModal}
+        className="clay-card bg-gradient-to-r from-amber-500/20 via-stone-900 to-amber-950/40 border-2 border-amber-400/50 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer hover:border-amber-400 transition-all shadow-[6px_10px_24px_rgba(217,119,6,0.15)] group"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-stone-950 rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_6px_14px_rgba(217,119,6,0.3),inset_1.5px_1.5px_3px_rgba(255,255,255,0.6)] group-hover:scale-105 transition-transform">
+            <Trophy className="w-6 h-6 sm:w-7 sm:h-7" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="bg-amber-400 text-stone-950 text-[11px] font-black px-2.5 py-0.5 rounded-full">
+                تحدي اليوم 🎯
+              </span>
+              <span className="text-amber-300 text-xs font-bold flex items-center gap-1">
+                <Award className="w-3.5 h-3.5" />
+                +{dailyChallenge.xpReward} XP
+              </span>
+            </div>
+            <h4 className="text-lg sm:text-xl font-black text-white group-hover:text-amber-300 transition-colors">
+              {dailyChallenge.title}
+            </h4>
+            <p className="text-stone-300 text-xs sm:text-sm line-clamp-1 mt-0.5">
+              {dailyChallenge.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="shrink-0 w-full sm:w-auto flex items-center justify-end">
+          {dailyChallengeRecord?.completed ? (
+            <span className="bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 px-4 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-[2px_3px_8px_rgba(6,95,70,0.3)]">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>مكتمل (+{dailyChallenge.xpReward} XP)</span>
+            </span>
+          ) : (
+            <button className="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-stone-950 font-black px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-[4px_6px_14px_rgba(217,119,6,0.3)] flex items-center justify-center gap-1.5 transition-all">
+              <span>عرض التحدي</span>
+              <ArrowRight className="w-4 h-4 rotate-180" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* 2. Taki Academy Live Status Banner */}
       <div
-        className={`rounded-2xl p-5 border-2 border-stone-900 shadow-[4px_4px_0px_0px_#1c1917] dark:shadow-[4px_4px_0px_0px_#000] transition-all ${
+        className={`clay-card p-4 sm:p-6 transition-all ${
           takiState === 'active'
-            ? 'bg-amber-100 dark:bg-indigo-950/60 border-amber-500'
+            ? 'bg-gradient-to-br from-amber-50 to-amber-100/80 dark:from-sky-950/60 dark:to-indigo-900/40 border-amber-300/80'
             : takiState === 'prep'
-            ? 'bg-amber-200 dark:bg-amber-950/60 border-stone-900'
+            ? 'bg-gradient-to-br from-amber-100 to-amber-200/70 dark:from-amber-950/60 dark:to-amber-900/40 border-amber-400/80'
             : 'bg-white dark:bg-stone-900'
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white border-2 border-stone-900 shadow-[2px_2px_0px_#000] flex items-center justify-center font-black shrink-0">
-              <GraduationCap className="w-7 h-7" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+            {/* Official Taki Academy Logo Avatar */}
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white dark:bg-stone-800 p-1 flex items-center justify-center shrink-0 shadow-[4px_6px_14px_rgba(2,155,229,0.25),inset_2px_2px_4px_rgba(255,255,255,0.8)] border-2 border-sky-400/70">
+              <TakiAcademyLogo variant="icon" size="sm" className="w-9 h-9 sm:w-11 sm:h-11" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-lg text-stone-900 dark:text-white">
+
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span className="font-black text-base sm:text-lg text-stone-900 dark:text-white">
                   Taki Academy • تقي أكاديمي
                 </span>
-                <span className="bg-indigo-100 dark:bg-indigo-950 text-indigo-900 dark:text-indigo-200 border-2 border-stone-900 dark:border-indigo-400 text-xs px-2.5 py-0.5 rounded-lg font-black shadow-[1.5px_1.5px_0px_#000]">
+                <span className="bg-sky-100 dark:bg-sky-950 text-sky-900 dark:text-sky-200 text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full font-black shadow-[inset_1px_1px_2px_rgba(255,255,255,0.7)] border border-sky-200 dark:border-sky-800">
                   يوميًا 19:30 – 21:00
                 </span>
                 {takiState === 'active' && (
-                  <span className="bg-emerald-600 text-white text-[11px] px-2 py-0.5 rounded-lg font-black border border-stone-900 animate-pulse flex items-center gap-1 shadow-[1.5px_1.5px_0px_#000]">
+                  <span className="bg-emerald-600 text-white text-[11px] px-2.5 py-0.5 rounded-full font-black animate-pulse flex items-center gap-1 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-white animate-ping"></span> مباشر الآن
                   </span>
                 )}
               </div>
 
-              <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 mt-1">
+              <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
                 {takiState === 'upcoming' && (
                   <>
                     الموعد القادم بعد{' '}
-                    <strong className="text-indigo-600 dark:text-indigo-400 font-black">
+                    <strong className="text-sky-600 dark:text-sky-400 font-black">
                       {Math.floor(takiDiffMinutes / 60)} س و {takiDiffMinutes % 60} د
                     </strong>
                     . احرص على إنهاء واجباتك المدرسية قبل الساعة 19:30.
@@ -267,7 +323,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </span>
                 )}
                 {takiState === 'active' && (
-                  <span className="text-indigo-900 dark:text-indigo-200 font-bold">
+                  <span className="text-sky-900 dark:text-sky-200 font-bold">
                     حصة اليوم جارية الآن. ركّز جيدًا ولا تنشغل بأي مهمة أخرى حتى 21:00.
                   </span>
                 )}
@@ -280,14 +336,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 self-stretch md:self-auto">
             <button
               onClick={() => {
                 sound.playSuccess();
                 confetti({ particleCount: 35, spread: 60, origin: { y: 0.8 } });
                 onAttendTaki();
               }}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:translate-x-[2px] active:translate-y-[2px] text-white font-black text-xs sm:text-sm rounded-xl border-2 border-stone-900 shadow-[3px_3px_0px_#000] flex items-center gap-1.5 transition-all"
+              className="w-full md:w-auto clay-btn-indigo px-4 py-2.5 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>تسجيل الحضور (+35 XP)</span>
@@ -300,10 +356,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         
         {/* Next Prayer */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-700 rounded-2xl p-5 shadow-[4px_4px_0px_0px_#1c1917] dark:shadow-[4px_4px_0px_0px_#000] transition-all">
+        <div className="clay-card p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-2 border-stone-900 flex items-center justify-center font-bold shadow-[2px_2px_0px_#000]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold shadow-[3px_4px_10px_rgba(0,0,0,0.06),inset_1.5px_1.5px_3px_rgba(255,255,255,0.8)] border border-emerald-200/60 dark:border-emerald-800">
                 <Compass className="w-5 h-5" />
               </div>
               <div>
@@ -317,7 +373,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-xl p-3 border-2 border-stone-900 flex items-center justify-between shadow-[2px_2px_0px_#000]">
+          <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl p-3 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-between shadow-[inset_1.5px_1.5px_3px_rgba(0,0,0,0.04)]">
             <span className="text-xs text-emerald-900 dark:text-emerald-200 font-bold">
               الوقت المتبقي:
             </span>
@@ -335,10 +391,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* School Session */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-700 rounded-2xl p-5 shadow-[4px_4px_0px_0px_#1c1917] dark:shadow-[4px_4px_0px_0px_#000] transition-all">
+        <div className="clay-card p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border-2 border-stone-900 flex items-center justify-center font-bold shadow-[2px_2px_0px_#000]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 flex items-center justify-center font-bold shadow-[3px_4px_10px_rgba(0,0,0,0.06),inset_1.5px_1.5px_3px_rgba(255,255,255,0.8)] border border-blue-200/60 dark:border-blue-800">
                 <School className="w-5 h-5" />
               </div>
               <div>
@@ -358,7 +414,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-950/40 rounded-xl p-3 border-2 border-stone-900 flex items-center justify-between text-xs shadow-[2px_2px_0px_#000]">
+          <div className="bg-blue-50 dark:bg-blue-950/40 rounded-2xl p-3 border border-blue-200/50 dark:border-blue-800/40 flex items-center justify-between text-xs shadow-[inset_1.5px_1.5px_3px_rgba(0,0,0,0.04)]">
             <span className="text-blue-900 dark:text-blue-200 font-bold">
               {currentClass
                 ? `${currentClass.startTime} - ${currentClass.endTime} (${currentClass.classroom || 'الإعدادية'})`
@@ -377,10 +433,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Sleep & Bedtime Countdown */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-700 rounded-2xl p-5 shadow-[4px_4px_0px_0px_#1c1917] dark:shadow-[4px_4px_0px_0px_#000] transition-all sm:col-span-2 lg:col-span-1">
+        <div className="clay-card p-5 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border-2 border-stone-900 flex items-center justify-center font-bold shadow-[2px_2px_0px_#000]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 flex items-center justify-center font-bold shadow-[3px_4px_10px_rgba(0,0,0,0.06),inset_1.5px_1.5px_3px_rgba(255,255,255,0.8)] border border-purple-200/60 dark:border-purple-800">
                 <Moon className="w-5 h-5" />
               </div>
               <div>
@@ -394,7 +450,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="bg-purple-50 dark:bg-purple-950/40 rounded-xl p-3 border-2 border-stone-900 flex items-center justify-between text-xs shadow-[2px_2px_0px_#000]">
+          <div className="bg-purple-50 dark:bg-purple-950/40 rounded-2xl p-3 border border-purple-200/50 dark:border-purple-800/40 flex items-center justify-between text-xs shadow-[inset_1.5px_1.5px_3px_rgba(0,0,0,0.04)]">
             <span className="text-purple-900 dark:text-purple-200 font-bold">
               {minsUntilBed > 0 ? (
                 <>متبقي حتى النوم: {bedHours} س و {bedMins} د</>
@@ -414,27 +470,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       </div>
 
-      {/* 4. Two Columns: Today's Homework & Quran Tracker */}
+      {/* 4. Weekly Study Minutes & Prayers Line Chart (recharts) */}
+      <StudyWeeklyChart stats={stats} dailyPrayers={dailyPrayers} />
+
+      {/* 5. Two Columns: Today's Homework & Quran Tracker */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Homework to finish today */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-700 rounded-2xl p-5 shadow-[4px_4px_0px_0px_#1c1917] dark:shadow-[4px_4px_0px_0px_#000]">
+        <div className="clay-card p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-2 border-stone-900 flex items-center justify-center font-bold">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold shadow-[2px_3px_8px_rgba(0,0,0,0.06),inset_1px_1px_2px_rgba(255,255,255,0.8)] border border-amber-200/70">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <h3 className="font-black text-base text-stone-900 dark:text-white">
                 واجبات اليوم (المطلوب قبل 19:30)
               </h3>
             </div>
-            <span className="text-xs bg-amber-200 dark:bg-amber-950 text-stone-900 dark:text-amber-300 border border-stone-900 px-2 py-0.5 rounded-lg font-black shadow-[1.5px_1.5px_0px_#000]">
+            <span className="text-xs bg-amber-200/80 dark:bg-amber-950 text-stone-900 dark:text-amber-300 px-3 py-1 rounded-full font-black shadow-[inset_1px_1px_2px_rgba(255,255,255,0.6)] border border-amber-300/60">
               {pendingHomework.length} متبقية
             </span>
           </div>
 
           {pendingHomework.length === 0 ? (
-            <div className="p-6 text-center bg-stone-50 dark:bg-stone-800/40 rounded-xl border-2 border-dashed border-stone-400 dark:border-stone-700">
+            <div className="p-6 text-center bg-stone-50/80 dark:bg-stone-800/40 rounded-2xl border-2 border-dashed border-stone-300 dark:border-stone-700">
               <p className="text-sm font-black text-emerald-700 dark:text-emerald-400">
                 ما شاء الله! أنجزت جميع واجبات اليوم المقررة 🎉
               </p>
@@ -447,12 +506,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {pendingHomework.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="p-3 bg-stone-50 dark:bg-stone-800/60 border-2 border-stone-900 dark:border-stone-700 rounded-xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#000] hover:translate-x-[-1px] transition-all"
+                  className="p-3.5 bg-stone-50/80 dark:bg-stone-800/60 rounded-2xl flex items-center justify-between gap-3 shadow-[3px_4px_10px_rgba(0,0,0,0.04),inset_1px_1px_2px_rgba(255,255,255,0.8)] border border-stone-200/70 dark:border-stone-700 hover:translate-x-[-2px] transition-all"
                 >
                   <div className="flex items-start gap-2.5 overflow-hidden">
                     <button
                       onClick={() => onToggleHomework(item.id)}
-                      className="mt-0.5 w-5 h-5 rounded border-2 border-stone-900 hover:border-emerald-600 flex items-center justify-center transition-colors shrink-0"
+                      className="mt-0.5 w-6 h-6 rounded-xl border border-stone-300 hover:border-emerald-600 bg-white dark:bg-stone-800 flex items-center justify-center transition-all shadow-inner shrink-0"
                     >
                       {item.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                     </button>
@@ -461,7 +520,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <span className="text-xs font-black text-stone-900 dark:text-stone-100 truncate">
                           {item.title}
                         </span>
-                        <span className="text-[10px] bg-stone-200 dark:bg-stone-700 text-stone-900 dark:text-stone-300 border border-stone-900 px-1.5 py-0.2 rounded font-black shrink-0">
+                        <span className="text-[10px] bg-stone-200/80 dark:bg-stone-700 text-stone-800 dark:text-stone-200 px-2 py-0.5 rounded-full font-black shrink-0">
                           {item.subject}
                         </span>
                       </div>
@@ -478,7 +537,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                   <button
                     onClick={() => onToggleHomework(item.id)}
-                    className="px-3 py-1 text-xs bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-black shrink-0 border border-stone-900 shadow-[1.5px_1.5px_0px_#000]"
+                    className="clay-btn-emerald px-3.5 py-1.5 text-xs text-white rounded-xl font-black shrink-0 transition-transform active:scale-95 cursor-pointer"
                   >
                     تم
                   </button>
@@ -487,7 +546,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           )}
 
-          <div className="mt-4 pt-3 border-t-2 border-stone-200 dark:border-stone-800 flex justify-between items-center">
+          <div className="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-between items-center">
             <span className="text-xs text-stone-500 font-bold">
               تذكير: لا تؤجل الواجبات لما بعد 21:00
             </span>
@@ -501,22 +560,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Daily Quran portion */}
-        <div className="bg-white dark:bg-stone-900 border-2 border-stone-900 dark:border-stone-700 rounded-2xl p-5 shadow-[4px_4px_0px_0px_#1c1917] dark:shadow-[4px_4px_0px_0px_#000]">
+        <div className="clay-card p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-2 border-stone-900 flex items-center justify-center font-bold">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold shadow-[2px_3px_8px_rgba(0,0,0,0.06),inset_1px_1px_2px_rgba(255,255,255,0.8)] border border-emerald-200/70">
                 <BookOpen className="w-4 h-4" />
               </div>
               <h3 className="font-black text-base text-stone-900 dark:text-white">
                 ورد القرآن اليومي
               </h3>
             </div>
-            <span className="text-xs bg-emerald-200 dark:bg-emerald-950 text-stone-900 dark:text-emerald-300 border border-stone-900 px-2 py-0.5 rounded-lg font-black shadow-[1.5px_1.5px_0px_#000]">
+            <span className="text-xs bg-emerald-200/80 dark:bg-emerald-950 text-stone-900 dark:text-emerald-300 px-3 py-1 rounded-full font-black shadow-[inset_1px_1px_2px_rgba(255,255,255,0.6)] border border-emerald-300/60">
               الهدف: {quran.dailyGoalPages} صفحات
             </span>
           </div>
 
-          <div className="p-4 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border-2 border-stone-900 shadow-[2px_2px_0px_#000]">
+          <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/40 shadow-[inset_1.5px_1.5px_3px_rgba(0,0,0,0.03)]">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-black text-emerald-900 dark:text-emerald-200">
                 الموضع الحالي: سورة {quran.currentSurah} • الجزء {quran.currentJuz}
@@ -527,9 +586,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             {/* Progress bar */}
-            <div className="w-full bg-emerald-200/60 dark:bg-emerald-900/60 h-3 rounded-full overflow-hidden border border-stone-900">
+            <div className="w-full bg-emerald-200/60 dark:bg-emerald-900/60 h-3 rounded-full overflow-hidden shadow-inner">
               <div
-                className="bg-emerald-600 dark:bg-emerald-400 h-full rounded-full transition-all duration-500"
+                className="bg-emerald-600 dark:bg-emerald-400 h-full rounded-full transition-all duration-500 shadow-sm"
                 style={{
                   width: `${Math.min(100, (quran.pagesReadToday / quran.dailyGoalPages) * 100)}%`,
                 }}
@@ -546,14 +605,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               <button
                 onClick={onAddQuranPage}
-                className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 active:translate-x-[1px] text-white rounded-lg font-black text-xs flex items-center gap-1 border border-stone-900 shadow-[1.5px_1.5px_0px_#000] transition-all"
+                className="clay-btn-emerald px-3.5 py-1.5 text-white rounded-xl font-black text-xs flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> صفحة إضافية
               </button>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t-2 border-stone-200 dark:border-stone-800 flex justify-between items-center">
+          <div className="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800 flex justify-between items-center">
             <span className="text-xs text-stone-500 font-bold">
               «خيركم من تعلم القرآن وعلمه»
             </span>
@@ -569,7 +628,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* 5. Motivational Quote */}
-      <div className="bg-[#FAF8F5] dark:bg-stone-900/80 border-2 border-stone-900 dark:border-stone-700 shadow-[4px_4px_0px_0px_#1c1917] dark:shadow-[4px_4px_0px_0px_#000] rounded-2xl p-4 text-center">
+      <div className="clay-card p-5 text-center bg-[#FAF8F5] dark:bg-stone-900/80">
         <p className="font-quran text-lg sm:text-xl text-stone-900 dark:text-amber-200 font-bold">
           {quote.text}
         </p>

@@ -11,7 +11,7 @@ import {
   Compass,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { toJpeg } from 'html-to-image';
 import { SchoolClass, UserSettings, PrayerTimeData, RoutineItem } from '../types';
 import { ARABIC_DAYS, DAY_ORDER, formatGregorianArabic, formatHijriArabic } from '../utils/arabicDates';
 import { TIME_SLOTS } from '../utils/defaultData';
@@ -50,14 +50,23 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 
     try {
       const element = printSheetRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
+      
+      // Pass skipFonts: true and fontEmbedCSS: '' to avoid browser SecurityError when reading cross-origin Google Fonts cssRules
+      const imgData = await toJpeg(element, {
+        quality: 0.95,
         backgroundColor: '#FFFFFF',
+        pixelRatio: 2,
+        skipFonts: true,
+        fontEmbedCSS: '',
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load exported image data'));
+        img.src = imgData;
+      });
+
       const isLandscape = docType === 'schedule' || docType === 'full';
       const pdf = new jsPDF({
         orientation: isLandscape ? 'landscape' : 'portrait',
@@ -68,28 +77,29 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      const imgAspectRatio = img.naturalHeight / img.naturalWidth;
+      const renderedHeight = pdfWidth * imgAspectRatio;
 
-      if (imgHeight <= pdfHeight) {
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      if (renderedHeight <= pdfHeight) {
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderedHeight);
       } else {
-        // Multi-page or scale to fit
-        const ratio = pdfHeight / imgHeight;
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth * ratio, pdfHeight);
+        const ratio = pdfHeight / renderedHeight;
+        const scaledWidth = pdfWidth * ratio;
+        const xOffset = (pdfWidth - scaledWidth) / 2;
+        pdf.addImage(imgData, 'JPEG', xOffset, 0, scaledWidth, pdfHeight);
       }
 
       const fileName =
         docType === 'schedule'
-          ? `الجدول_المدرسي_${settings.studentName}_8_أساسي.pdf`
+          ? `الجدول_المدرسي_${settings.studentName || 'الطالب'}_8_أساسي.pdf`
           : docType === 'routine'
-          ? `الروتين_اليومي_${settings.studentName}_8_أساسي.pdf`
-          : `المخطط_الشامل_${settings.studentName}_8_أساسي.pdf`;
+          ? `الروتين_اليومي_${settings.studentName || 'الطالب'}_8_أساسي.pdf`
+          : `المخطط_الشامل_${settings.studentName || 'الطالب'}_8_أساسي.pdf`;
 
       pdf.save(fileName);
     } catch (err) {
       console.error('Error generating PDF:', err);
-      // Fallback to window.print
+      // Fallback to native browser print
       window.print();
     } finally {
       setIsGenerating(false);
@@ -97,13 +107,13 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[#FAF8F5] dark:bg-stone-900 border-2 border-stone-800 rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="clay-card bg-[#FAF8F5] dark:bg-stone-900 w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden rounded-3xl">
         
         {/* Header */}
-        <div className="bg-[#0F382A] text-amber-50 p-4 sm:p-5 flex items-center justify-between border-b-2 border-stone-800">
+        <div className="bg-gradient-to-r from-[#165b44] to-[#0F382A] text-amber-50 p-5 flex items-center justify-between border-b border-emerald-700/40">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-400 text-stone-900 flex items-center justify-center font-bold text-lg shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-amber-400 text-stone-900 flex items-center justify-center font-bold text-lg shadow-[2px_3px_8px_rgba(0,0,0,0.2),inset_1px_1px_2px_rgba(255,255,255,0.7)]">
               <FileDown className="w-6 h-6" />
             </div>
             <div>
@@ -118,22 +128,22 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-emerald-900/60 text-stone-300 hover:text-white transition-colors"
+            className="p-2 rounded-2xl hover:bg-emerald-900/60 text-stone-300 hover:text-white transition-all cursor-pointer active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Options & Action Bar */}
-        <div className="p-4 bg-stone-100 dark:bg-stone-800/80 border-b border-stone-200 dark:border-stone-700 flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 bg-stone-100/90 dark:bg-stone-800/80 border-b border-stone-200 dark:border-stone-700 flex flex-wrap items-center justify-between gap-3">
           
           {/* Document selection */}
-          <div className="flex bg-white dark:bg-stone-900 p-1 rounded-xl border border-stone-300 dark:border-stone-700 text-xs font-bold">
+          <div className="flex bg-white dark:bg-stone-900 p-1.5 rounded-2xl border border-stone-300 dark:border-stone-700 text-xs font-bold shadow-inner">
             <button
               onClick={() => setDocType('schedule')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                 docType === 'schedule'
-                  ? 'bg-[#0F382A] text-amber-300 shadow-sm'
+                  ? 'bg-gradient-to-br from-[#165b44] to-[#0F382A] text-amber-300 shadow-sm font-black'
                   : 'text-stone-600 dark:text-stone-300'
               }`}
             >
@@ -141,9 +151,9 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             </button>
             <button
               onClick={() => setDocType('routine')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                 docType === 'routine'
-                  ? 'bg-[#0F382A] text-amber-300 shadow-sm'
+                  ? 'bg-gradient-to-br from-[#165b44] to-[#0F382A] text-amber-300 shadow-sm font-black'
                   : 'text-stone-600 dark:text-stone-300'
               }`}
             >
@@ -151,9 +161,9 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             </button>
             <button
               onClick={() => setDocType('full')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                 docType === 'full'
-                  ? 'bg-[#0F382A] text-amber-300 shadow-sm'
+                  ? 'bg-gradient-to-br from-[#165b44] to-[#0F382A] text-amber-300 shadow-sm font-black'
                   : 'text-stone-600 dark:text-stone-300'
               }`}
             >
@@ -162,10 +172,10 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-2 mr-auto">
+          <div className="flex items-center gap-2.5 mr-auto">
             <button
               onClick={handleBrowserPrint}
-              className="px-3.5 py-2 bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-800 dark:text-stone-200 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
+              className="px-4 py-2 bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-800 dark:text-stone-200 font-bold text-xs rounded-2xl flex items-center gap-1.5 transition-all shadow-[2px_3px_8px_rgba(0,0,0,0.06),inset_1px_1px_2px_rgba(255,255,255,0.8)] cursor-pointer active:scale-95"
               title="طباعة عبر الطابعة أو حفظ كـ PDF عبر المتصفح"
             >
               <Printer className="w-4 h-4" />
@@ -175,7 +185,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
             <button
               onClick={handleDownloadPdf}
               disabled={isGenerating}
-              className="px-4 py-2 bg-[#0F382A] hover:bg-emerald-900 active:scale-95 text-amber-300 font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md"
+              className="clay-btn-emerald px-5 py-2.5 text-white font-black text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-md"
             >
               {isGenerating ? (
                 <>

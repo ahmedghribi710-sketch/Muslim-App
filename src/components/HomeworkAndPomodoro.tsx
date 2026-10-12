@@ -15,7 +15,14 @@ import {
   BookOpen,
   Filter,
   GraduationCap,
+  Maximize2,
+  Minimize2,
+  Eye,
+  EyeOff,
+  StickyNote,
 } from 'lucide-react';
+import { FocusScratchpad } from './FocusScratchpad';
+import { TakiAcademyLogo } from './TakiAcademyLogo';
 import {
   HomeworkItem,
   ExamItem,
@@ -35,6 +42,8 @@ interface HomeworkAndPomodoroProps {
   onSaveHomework: (items: HomeworkItem[]) => void;
   onSaveExams: (items: ExamItem[]) => void;
   onSessionComplete: (minutes: number) => void;
+  isFocusMode?: boolean;
+  onToggleFocusMode?: (enabled?: boolean) => void;
 }
 
 export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
@@ -44,6 +53,8 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
   onSaveHomework,
   onSaveExams,
   onSessionComplete,
+  isFocusMode = false,
+  onToggleFocusMode,
 }) => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterSubject, setFilterSubject] = useState<string>('all');
@@ -73,6 +84,24 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
   const [timeLeft, setTimeLeft] = useState<number>(settings.pomodoroWorkMinutes * 60);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [selectedTaskForPomo, setSelectedTaskForPomo] = useState<string>('');
+  const [hasSavedNotes, setHasSavedNotes] = useState<boolean>(false);
+  const [showReviewNotes, setShowReviewNotes] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkNotes = () => {
+      try {
+        const rawNotes = localStorage.getItem('muslim_student_focus_notes');
+        const rawFreeform = localStorage.getItem('muslim_student_focus_freeform');
+        const parsed = rawNotes ? JSON.parse(rawNotes) : [];
+        setHasSavedNotes(parsed.length > 0 || !!(rawFreeform && rawFreeform.trim()));
+      } catch {
+        setHasSavedNotes(false);
+      }
+    };
+    checkNotes();
+    window.addEventListener('focus-notes-updated', checkNotes);
+    return () => window.removeEventListener('focus-notes-updated', checkNotes);
+  }, []);
 
   const todayDay = getTodayDayOfWeek();
   const workload = analyzeWorkloadForDay(todayDay, homework, settings.commuteMinutes);
@@ -103,10 +132,20 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
     };
   }, [isTimerRunning, timeLeft, pomodoroMode, settings, onSessionComplete]);
 
-  const handleStartTimer = () => setIsTimerRunning(true);
-  const handlePauseTimer = () => setIsTimerRunning(false);
+  const handleStartTimer = () => {
+    setIsTimerRunning(true);
+    if (pomodoroMode === 'work') {
+      onToggleFocusMode?.(true);
+    }
+  };
+
+  const handlePauseTimer = () => {
+    setIsTimerRunning(false);
+  };
+
   const handleResetTimer = () => {
     setIsTimerRunning(false);
+    onToggleFocusMode?.(false);
     setTimeLeft(
       pomodoroMode === 'work'
         ? settings.pomodoroWorkMinutes * 60
@@ -117,6 +156,9 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
   const handleSwitchPomoMode = (mode: 'work' | 'break') => {
     setIsTimerRunning(false);
     setPomodoroMode(mode);
+    if (mode === 'break') {
+      onToggleFocusMode?.(false);
+    }
     setTimeLeft(
       mode === 'work'
         ? settings.pomodoroWorkMinutes * 60
@@ -133,11 +175,16 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
           sound.playSuccess();
           confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
         }
-        return {
+        const updatedItem: HomeworkItem = {
           ...h,
           status: nextStatus,
-          completedAt: nextStatus === 'completed' ? new Date().toISOString() : undefined,
         };
+        if (nextStatus === 'completed') {
+          updatedItem.completedAt = new Date().toISOString();
+        } else {
+          delete updatedItem.completedAt;
+        }
+        return updatedItem;
       }
       return h;
     });
@@ -234,7 +281,7 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
 
         <button
           onClick={() => setIsAddHomeworkOpen(true)}
-          className="px-4 py-2 bg-[#0F382A] hover:bg-emerald-900 text-amber-300 font-bold text-xs sm:text-sm rounded-xl transition-all shadow-sm flex items-center gap-1.5 self-start sm:self-auto"
+          className="clay-btn-emerald px-4 py-2.5 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 self-start sm:self-auto transition-transform active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>إضافة واجب جديد</span>
@@ -243,12 +290,14 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
 
       {/* Smart Workload Redistribution Alert Banner */}
       {workload.isOverloaded && (
-        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-400 rounded-2xl shadow-sm text-amber-900 dark:text-amber-200">
+        <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-50 to-amber-100/90 dark:from-amber-950/60 dark:to-amber-900/40 border border-amber-300 rounded-3xl shadow-[6px_10px_20px_rgba(217,119,6,0.15),inset_2px_2px_4px_rgba(255,255,255,0.9),inset_-2px_-2px_4px_rgba(0,0,0,0.05)] text-amber-900 dark:text-amber-200">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="space-y-1 text-xs">
-              <div className="font-bold text-sm">
-                تنبيه توزيع الوقت: الواجبات تتجاوز الوقت المتاح قبل Taki Academy!
+            <div className="w-8 h-8 rounded-xl bg-white dark:bg-stone-800 p-0.5 border border-sky-300 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <TakiAcademyLogo variant="icon" size="xs" className="w-6 h-6" />
+            </div>
+            <div className="space-y-1.5 text-xs flex-1">
+              <div className="font-black text-sm flex items-center gap-1.5 flex-wrap">
+                <span>تنبيه توزيع الوقت: الواجبات تتجاوز الوقت المتاح قبل Taki Academy!</span>
               </div>
               <p>
                 الوقت المتاح حتى 19:30 هو <strong>{workload.availableMinutesBeforeTaki} دقيقة</strong>، بينما مجموع الواجبات يتطلب <strong>{workload.totalRequiredMinutes} دقيقة</strong>.
@@ -262,29 +311,70 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
       )}
 
       {/* Pomodoro Timer Widget */}
-      <div className="bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-3xl p-6 sm:p-7 border-2 border-stone-700 shadow-xl">
+      <div className={`relative transition-all duration-300 rounded-3xl p-6 sm:p-8 border ${
+        isFocusMode
+          ? 'bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 text-white border-amber-400/40 shadow-[0_0_50px_rgba(245,158,11,0.2),8px_14px_30px_rgba(0,0,0,0.5)] ring-2 ring-amber-400/30'
+          : 'bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white border-white/10 shadow-[8px_14px_30px_rgba(0,0,0,0.35),inset_2px_2px_4px_rgba(255,255,255,0.1),inset_-3px_-3px_8px_rgba(0,0,0,0.6)]'
+      }`}>
+        {/* Focus Mode active pulse tag */}
+        {isFocusMode && (
+          <div className="absolute -top-3 left-6 bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 px-3.5 py-1 rounded-full text-xs font-black flex items-center gap-1.5 shadow-lg border border-amber-300 animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-stone-950"></span>
+            <span>وضع التركيز نشط (تم إخفاء التشتيت)</span>
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center md:text-right">
-            <div className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-bold">
-              <Timer className="w-3.5 h-3.5" />
-              <span>مؤقت بومودورو للتركيز الفائق (Pomodoro)</span>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+              <div className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-400/30 px-3.5 py-1 rounded-full text-xs font-black shadow-inner">
+                <Timer className="w-3.5 h-3.5" />
+                <span>مؤقت بومودورو للتركيز الفائق (Pomodoro)</span>
+              </div>
+
+              {/* Explicit Focus Mode Switch Button */}
+              <button
+                type="button"
+                onClick={() => onToggleFocusMode?.(!isFocusMode)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border transition-all cursor-pointer ${
+                  isFocusMode
+                    ? 'bg-amber-400 text-stone-900 border-amber-300 shadow-md scale-105'
+                    : 'bg-stone-800 text-stone-300 border-stone-700 hover:text-white hover:border-stone-500'
+                }`}
+                title="تفعيل أو إلغاء وضع التركيز"
+              >
+                {isFocusMode ? (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>وضع التركيز مفعّل</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>تفعيل وضع التركيز</span>
+                  </>
+                )}
+              </button>
             </div>
+
             <h3 className="text-xl sm:text-2xl font-black text-amber-100">
               {pomodoroMode === 'work' ? 'جلسة مذاكرة وحل واجبات' : 'استراحة استرجاع الطاقة'}
             </h3>
-            <p className="text-xs text-stone-300 max-w-md">
-              جلسات مركزة لمدة {settings.pomodoroWorkMinutes} دقيقة بدون هاتف أو مشتتات، تليها استراحة {settings.pomodoroBreakMinutes} دقائق.
+            <p className="text-xs sm:text-sm text-stone-300 max-w-md leading-relaxed">
+              {isFocusMode
+                ? 'وضع التركيز يقوم بإخفاء شريط التنقل وتعتيم الخلفية لتوفير بيئة هادئة خالية من أي مشتتات.'
+                : `جلسات مركزة لمدة ${settings.pomodoroWorkMinutes} دقيقة بدون هاتف أو مشتتات، تليها استراحة ${settings.pomodoroBreakMinutes} دقائق.`}
             </p>
           </div>
 
           {/* Timer Clock & Controls */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex bg-stone-800/80 p-1 rounded-xl border border-stone-700 text-xs font-bold">
+          <div className="flex flex-col items-center gap-3.5">
+            <div className="flex bg-stone-800/90 p-1.5 rounded-2xl border border-stone-700/80 text-xs font-bold shadow-inner">
               <button
                 onClick={() => handleSwitchPomoMode('work')}
-                className={`px-3 py-1 rounded-lg transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl transition-all ${
                   pomodoroMode === 'work'
-                    ? 'bg-amber-400 text-stone-900 shadow-sm'
+                    ? 'bg-amber-400 text-stone-900 shadow-sm font-black'
                     : 'text-stone-300 hover:text-white'
                 }`}
               >
@@ -292,9 +382,9 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
               </button>
               <button
                 onClick={() => handleSwitchPomoMode('break')}
-                className={`px-3 py-1 rounded-lg transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl transition-all ${
                   pomodoroMode === 'break'
-                    ? 'bg-emerald-500 text-white shadow-sm'
+                    ? 'bg-emerald-500 text-white shadow-sm font-black'
                     : 'text-stone-300 hover:text-white'
                 }`}
               >
@@ -302,22 +392,22 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
               </button>
             </div>
 
-            <div className="font-mono text-5xl sm:text-6xl font-black text-amber-300 tracking-wider">
+            <div className="font-mono text-5xl sm:text-6xl font-black text-amber-300 tracking-wider drop-shadow-md">
               {formatTimerDigits(timeLeft)}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               {isTimerRunning ? (
                 <button
                   onClick={handlePauseTimer}
-                  className="px-5 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-stone-950 font-black rounded-xl text-xs flex items-center gap-1.5 shadow-md"
+                  className="clay-btn-amber px-6 py-2.5 text-stone-950 font-black rounded-2xl text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Pause className="w-4 h-4 fill-current" /> إيقاف مؤقت
                 </button>
               ) : (
                 <button
                   onClick={handleStartTimer}
-                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-xl text-xs flex items-center gap-1.5 shadow-md"
+                  className="clay-btn-emerald px-7 py-2.5 text-white font-black rounded-2xl text-xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Play className="w-4 h-4 fill-current" /> بدء التركيز
                 </button>
@@ -334,6 +424,38 @@ export const HomeworkAndPomodoro: React.FC<HomeworkAndPomodoroProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Focus Mode Quick Scratchpad & Review Notes */}
+      {isFocusMode ? (
+        <FocusScratchpad isFocusMode={true} />
+      ) : hasSavedNotes ? (
+        <div className="space-y-3">
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-stone-800 dark:text-stone-200 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-amber-400/20 text-amber-500">
+                <StickyNote className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-bold text-xs sm:text-sm">
+                  لديك ملاحظات وأفكار طارئة دوّنتها أثناء جلسات التركيز
+                </p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  تذكّر مراجعة النقاط والأفكار التي كتبتها قبل أن تنساها بعد انتهاء المؤقت.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowReviewNotes(!showReviewNotes)}
+              className="clay-btn-amber px-3.5 py-1.5 text-xs font-black rounded-xl text-stone-950 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <StickyNote className="w-3.5 h-3.5" />
+              <span>{showReviewNotes ? 'إخفاء مساحة الملاحظات' : 'مراجعة الملاحظات الطارئة'}</span>
+            </button>
+          </div>
+          {showReviewNotes && <FocusScratchpad isFocusMode={false} />}
+        </div>
+      ) : null}
 
       {/* Homework List Section */}
       <div className="bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
